@@ -95,7 +95,7 @@
   .sect:first-of-type{margin-top:20px}
 
   /* ───────── 커버 ───────── */
-  .cover{max-width:860px;margin:0 auto;text-align:center;padding-top:5vh}
+  .cover{max-width:860px;margin:0 auto;text-align:center;padding-top:4vh}
   .cover .eyebrow{font-size:13px;font-weight:700;color:var(--blue);letter-spacing:.02em;margin-bottom:18px}
   .cover h1{font-size:60px;font-weight:800;letter-spacing:-.03em;line-height:1.25}
   .cover h1 .grad{background:linear-gradient(90deg,#2f7ef2,#7ab8f7,#9775fa,#4fb1f5,#2f7ef2);
@@ -110,6 +110,21 @@
   .cover .hypo{margin:40px auto 0;max-width:660px;font-size:14px;color:var(--g700);line-height:1.8}
   .cover .hypo .hl{display:inline-block;font-size:11px;font-weight:800;color:var(--blue-d);background:var(--blue-bg);
                    border-radius:999px;padding:3px 11px;margin-bottom:10px;letter-spacing:.03em}
+  .ctable{max-width:680px;margin:48px auto 20px;text-align:left;border-top:1px solid var(--g100)}
+  .crow{display:flex;gap:18px;padding:20px 4px;border-bottom:1px solid var(--g100);align-items:flex-start}
+  .ctable .crow:last-child{border-bottom:none}
+  .crow .cl{width:126px;flex-shrink:0;font-size:15px;font-weight:700;color:var(--blue);line-height:1.6}
+  .crow .cr{flex:1;font-size:14px;color:var(--g600);line-height:1.75}
+  .crow .cr b{color:var(--g900)}
+  .cpm{width:34px;height:34px;flex-shrink:0;font-size:24px;font-weight:300;color:var(--g400);border-radius:9px;
+       display:flex;align-items:center;justify-content:center;line-height:1;transition:all .15s;margin-top:-5px}
+  .cpm-sp{width:34px;flex-shrink:0}
+  .cpm:hover{background:var(--g75);color:var(--g900)}
+  .cx{display:none;margin-top:14px;padding-top:12px;border-top:1px dashed var(--g100)}
+  .crow.open .cx{display:block;animation:enter .25s ease}
+  .cxi{font-size:13px;color:var(--g600);padding:3px 0}
+  .cxi b{color:var(--g900);font-variant-numeric:tabular-nums}
+  .cxi span{color:var(--g300);font-size:12px}
   .cover .route{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:34px}
   .cover .rt{font-size:12px;font-weight:600;color:var(--g600);background:var(--g75);border-radius:999px;padding:6px 13px}
   .cover .rt b{color:var(--g900)}
@@ -674,31 +689,55 @@
   <!-- ═══════ 커버: 문제 정의 ═══════ -->
   <section class="screen" data-step="0">
     <div class="cover">
-      <div class="eyebrow">6명이 회의 일정을 잡는 경험</div>
-      <h1>회의 조율의 진짜 고통은<br>첫 제안이 아니라<br><span class="grad">실패한 이후</span>에 있다</h1>
-      <p class="lead">기존 도구는 <b>첫 제안까지만</b> 지원해요. 불참이 뜨고, 응답이 없고, 메신저에서 재협상이 벌어지는 —
-      조율 비용의 대부분이 발생하는 이 구간이 <b>제품 밖에</b> 있죠.
-      시간을 어렵게 합의해도 미팅룸이 없으면 원점으로 돌아가고요.</p>
-      <div class="stats">
-        <div class="cstat"><div class="n">주 4.2건</div><div class="l">재조정되는 회의</div><div class="s">Reclaim.ai</div></div>
-        <div class="cstat"><div class="n">43%</div><div class="l">주 3시간+ 을 조율에 사용</div><div class="s">Calendly 2024</div></div>
-        <div class="cstat"><div class="n">30통</div><div class="l">그룹 회의 1건당 이메일</div><div class="s">Doodle 2019</div></div>
+      <h1>회의 조율의 고통은<br>첫 제안이 아니라<br><span class="grad">실패한 이후</span>에 있다</h1>
+      <div class="ctable">
+        <div class="crow">
+          <div class="cl">핵심 가설</div>
+          <div class="cr">재협상을 원탭 구조화 인터랙션으로 만들면, 사람들은 메신저로 이탈하지 않고 제품 안에서 응답할 것이다. 그러면 조율은 <b>주최자 액션 1회</b>로 끝난다.
+            <div class="cx">
+              <div class="cxi"><b>반증 조건</b> — 변경 요청의 30% 이상이 메신저에 달리고 제품 알림이 무시되면, 가설은 기각.</div>
+              <div class="cxi"><b>출시 전</b> — Wizard-of-Oz: 실제 팀의 조율 1건을 이 플로우대로 수동 시뮬레이션 · 원탭 응답 유저 테스트.</div>
+              <div class="cxi"><b>출시 후 지표</b> — 제품 내 확정 완결률 · 응답 채널 비율(제품 vs 메신저) · 첫 제안 수용률.</div>
+            </div>
+          </div>
+          <button class="cpm" onclick="toggleCrow(this)" aria-label="검증 계획 펼치기">＋</button>
+        </div>
+        <div class="crow">
+          <div class="cl">문제와 해결</div>
+          <div class="cr">기존 도구는 <b>첫 제안까지만</b> 지원한다 — 조율 비용의 대부분이 발생하는 실패 이후가 <b>제품 밖에</b> 있다. 그래서 그 재협상 루프를 제품 안으로 가져와, 조율이 주최자 액션 1회(생성)로 끝나게 했다.
+            <div class="cx">
+              <div class="cxi"><b>주 4.2건</b> 재조정되는 회의 <span>— Reclaim, 직장인 1,300명 설문 (2024)</span></div>
+              <div class="cxi"><b>43%</b> 주 3시간 이상을 조율에 사용 <span>— Calendly, 직장인 1,244명 설문 (2024)</span></div>
+              <div class="cxi"><b>30분</b> 그룹 회의 1건을 잡는 평균 시간 <span>— Doodle, State of Meetings (2019)</span></div>
+              <div class="cxi" style="margin-bottom:8px">시간을 어렵게 합의해도 미팅룸이 없으면 원점 — 실패는 <b>이중</b>으로 일어난다.</div>
+              <div class="cxi"><b>주최자는 시간을 고르지 않는다</b> — 제목·참석자만 입력하면, 회의 패턴(점심 직후 거절 이력·외근 요일)까지 추론해 '괜찮은 시간'을 근거와 함께 랭킹. 미팅룸도 함께 계산·홀드.</div>
+              <div class="cxi"><b>발송은 투표가 아니라 확정 예고</b> — 시간 하나만 보내고, 침묵은 동의, 마감이 지나면 자동 확정. 옵션이 여럿이면 무응답을 해석할 수 없어서 하나여야 한다.</div>
+              <div class="cxi"><b>변경 요청은 원탭</b> — 자유 텍스트가 아니라 검증된 대안 위의 선택. 거절이 제약 데이터가 되어 시스템이 즉시 재계산하고 전원에게 재제안한다.</div>
+              <div class="cxi"><b>후보가 소진되면 사람에게</b> — 루프를 멈추고 각 선택의 희생을 문장으로 번역해 주최자에게 넘긴다. 기계는 조율을, 사람은 희생의 결정을.</div>
+            </div>
+          </div>
+          <button class="cpm" onclick="toggleCrow(this)" aria-label="문제와 해결 펼치기">＋</button>
+        </div>
+        <div class="crow">
+          <div class="cl">이 과제 보는 법</div>
+          <div class="cr">하단 이전/다음이나 키보드 ←→로 8단계를 이동해요. 우상단 <b>설계 노트</b>를 열어두면 화면마다 의도가 함께 읽혀요.
+            <div class="cx">
+              <div class="cxi">노트 상단 프로필이 지금 화면을 보는 사람 — <b>주최자(가영)</b>와 <b>참석자(지훈)</b>의 시점을 오가요.</div>
+              <div class="cxi">해상도가 낮으면 캘린더 목록이 접힌 채 시작돼요 — 좌상단 <b>☰</b>를 누르면 사이드바까지 풀 디자인이 보여요.</div>
+              <div style="font-size:11px;font-weight:800;color:var(--g400);letter-spacing:.04em;margin:14px 0 4px">플로우 목차</div>
+              <div class="cxi"><b>01–02</b> 주최자 · 조건 입력 → 괜찮은 시간 추천</div>
+              <div class="cxi"><b>03–04</b> 참석자 · 확정 예고 수신 → 원탭 응답</div>
+              <div class="cxi"><b>05</b> 자동 재조율 — 이 제품의 증명</div>
+              <div class="cxi"><b>06–07</b> 조용한 확정 · 후보 소진 시 사람의 결정</div>
+            </div>
+          </div>
+          <button class="cpm" onclick="toggleCrow(this)" aria-label="관람 가이드 펼치기">＋</button>
+        </div>
       </div>
-      <div class="hypo">
-        <span class="hl">핵심 가설</span><br>
-        재협상을 원탭 구조화 인터랙션으로 만들면, 사람들은 메신저로 이탈하지 않고 제품 안에서 응답할 것이다.<br>그러면 조율은 <b>주최자 액션 1회</b>로 끝난다.
-      </div>
-      <div class="route">
-        <span class="rt"><b>01–02</b> 주최자 · 조건 → 괜찮은 시간</span>
-        <span class="rt"><b>03–04</b> 참석자 · 확정 예고 → 원탭 응답</span>
-        <span class="rt"><b>05</b> 자동 재조율 — 이 제품의 증명</span>
-        <span class="rt"><b>06–07</b> 조용한 확정 · 사람의 결정</span>
-      </div>
-      <div class="tip">우상단 ✎ 설계 노트를 열어두면 화면마다 의도가 함께 읽혀요</div>
       <div class="btnrow" style="justify-content:center;margin-top:30px">
         <button class="btn pri" onclick="go(1)">플로우 시작하기 →</button>
       </div>
-      <div class="tip" style="margin-top:10px">키보드 ←→ 로도 이동할 수 있어요</div>
+      <div class="tip" style="margin-top:14px;font-size:15px">김태욱 · elche1@naver.com</div>
     </div>
   </section>
 
@@ -1920,6 +1959,11 @@ function go(i){
   window._layoutT = setTimeout(layoutCal, 400);
 }
 function nav(d){ go(cur + d); }
+function toggleCrow(btn){
+  var r = btn.closest('.crow');
+  r.classList.toggle('open');
+  btn.textContent = r.classList.contains('open') ? '−' : '＋';
+}
 
 /* 캘린더 시간축을 뷰포트 높이에 맞춰 스케일링 (9시–18시 = 9시간) */
 var CAL_START = 9, CAL_HOURS = 9;
