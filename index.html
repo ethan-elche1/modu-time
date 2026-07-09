@@ -1,0 +1,2237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 시간 — 6명의 회의, 주최자 액션 1회로 확정</title>
+<meta name="description" content="회의 조율의 진짜 고통은 첫 제안이 아니라 실패 이후의 재협상 루프에 있습니다. 그 루프를 제품 안으로 가져온 설계.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --g900:#191f28; --g700:#333d4b; --g600:#4e5968; --g500:#6b7684; --g400:#8b95a1;
+    --g300:#b0b8c1; --g200:#d1d6db; --g100:#e5e8eb; --g75:#f2f4f6; --g50:#f9fafb;
+    --blue:#3182f6; --blue-d:#1b64da; --blue-bg:#eef5ff; --blue-bg2:#e0edff;
+    --red:#e5503c; --red-bg:#fdeeec;
+    --green:#1d9d61; --green-bg:#e8f7f0;
+    --amber:#a8710a; --amber-bg:#fbf4e4;
+    --card:#fff;
+    --r-sm:10px; --r-md:14px; --r-lg:20px;
+    --sh:0 1px 3px rgba(25,31,40,.04), 0 6px 24px rgba(25,31,40,.05);
+    --sh-lift:0 4px 12px rgba(25,31,40,.08), 0 16px 40px rgba(25,31,40,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;
+       background:var(--g50);color:var(--g900);line-height:1.6;min-height:100vh;display:flex;flex-direction:column;
+       -webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+  /* ───────── 상단 내비 ───────── */
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(249,250,251,.85);backdrop-filter:blur(12px);
+          border-bottom:1px solid var(--g100);padding:0 28px;display:flex;align-items:center;height:56px;gap:20px}
+  .brand{display:flex;align-items:center;gap:5px;flex-shrink:0;
+         font-family:"Pretendard Variable",Pretendard,sans-serif;font-size:17px;font-weight:800;
+         letter-spacing:-.02em;color:#2b3a55}
+  .brand svg{display:block}
+  .stepper{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;justify-content:center}
+  .stepper::-webkit-scrollbar{display:none}
+  .stp{font-size:12px;font-weight:600;color:var(--g400);padding:6px 12px;border-radius:999px;white-space:nowrap;
+       transition:all .18s}
+  .stp:hover{color:var(--g600);background:var(--g75)}
+  .stp.on{background:var(--g900);color:#fff}
+  .stp.branch{color:var(--amber)}
+  .stp.branch.on{background:var(--amber);color:#fff}
+  .calctrls{display:none;align-items:center;gap:6px;flex-shrink:0}
+  body.calmode .calctrls{display:flex}
+  .viewseg{display:flex;align-items:center;gap:2px;background:var(--g75);border-radius:9px;padding:3px}
+  .viewseg button{font-size:11px;font-weight:600;color:var(--g400);padding:4px 9px;border-radius:7px}
+  .viewseg button:hover{color:var(--g600)}
+  .viewseg button.on{background:var(--card);font-weight:700;color:var(--g700);box-shadow:0 1px 3px rgba(25,31,40,.08)}
+  .viewseg .divi{width:1px;height:12px;background:var(--g200);margin:0 4px}
+  .iconbtn{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+           color:var(--g500);transition:all .15s;flex-shrink:0}
+  .iconbtn:hover{background:var(--g75);color:var(--g900)}
+  .rolechip{flex-shrink:0;font-size:13px;display:flex;align-items:center;gap:8px;justify-content:flex-end}
+  .ravatar{width:24px;height:24px;border-radius:50%;color:#fff;font-size:11px;font-weight:700;
+           display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .rolechip b{color:var(--g900);font-weight:700}
+
+  /* ───────── 스테이지 ───────── */
+  .stage{flex:1;display:flex;justify-content:center;padding:40px 24px 120px}
+  .screen{width:100%;max-width:1000px;display:none;flex-direction:column;gap:18px}
+  .screen.on{display:flex;animation:enter .35s cubic-bezier(.2,.7,.3,1)}
+  @keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border:1px solid var(--g100);border-radius:var(--r-lg);padding:32px;box-shadow:var(--sh)}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.3}
+  h2{font-size:20px;font-weight:800;letter-spacing:-.015em}
+  .desc{font-size:14px;color:var(--g600);margin-top:6px}
+  .sect{font-size:12px;font-weight:700;color:var(--g400);letter-spacing:.02em;margin:24px 0 10px}
+  .sect:first-of-type{margin-top:20px}
+
+  /* ───────── 커버 ───────── */
+  .cover{max-width:760px;margin:0 auto;text-align:left}
+  .cover .eyebrow{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:12px}
+  .cover h1 .dim{color:var(--g400)}
+  .cover .prob{margin-top:24px;padding:22px 24px;background:var(--card);border:1px solid var(--g100);
+               border-radius:var(--r-md);font-size:15px;line-height:1.7;color:var(--g700)}
+  .cover .prob b{color:var(--g900)}
+  .cover .stats{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .cstat{flex:1;min-width:170px;background:var(--card);border:1px solid var(--g100);border-radius:var(--r-md);padding:14px 16px}
+  .cstat .n{font-size:19px;font-weight:800;letter-spacing:-.01em}
+  .cstat .l{font-size:12px;color:var(--g500);margin-top:2px}
+  .cstat .s{font-size:11px;color:var(--g400)}
+  .cover .hypo{margin-top:14px;padding:18px 22px;border-radius:var(--r-md);background:var(--blue-bg);
+               border:1px solid var(--blue-bg2);font-size:14px;color:var(--g700)}
+  .cover .hypo b{color:var(--blue-d)}
+
+  /* ───────── 버튼 ───────── */
+  .btn{border-radius:12px;padding:14px 24px;font-size:15px;font-weight:700;transition:all .15s;letter-spacing:-.01em}
+  .btn:active{transform:scale(.98)}
+  .btn.pri{background:var(--blue);color:#fff}
+  .btn.pri:hover{background:var(--blue-d)}
+  .btn.ghost{background:var(--g75);color:var(--g600)}
+  .btn.ghost:hover{background:var(--g100)}
+  .btn.danger{background:var(--red-bg);color:var(--red)}
+  .btn.sm{padding:10px 16px;font-size:13px;border-radius:10px}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btnrow{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;align-items:center}
+
+  /* ───────── 폼 (01 생성) ───────── */
+  .frow{display:flex;gap:10px;flex-wrap:wrap}
+  .fld{background:var(--g50);border:1px solid var(--g100);border-radius:var(--r-sm);padding:12px 16px;
+       font-size:14px;transition:border-color .15s}
+  .fld:hover{border-color:var(--g200)}
+  .fld .lab{font-size:11px;color:var(--g400);display:block;font-weight:600;margin-bottom:1px}
+  .fld b{font-weight:700}
+  .fld .aux{font-size:12px;color:var(--g400);font-weight:400}
+
+  .fbox{position:relative;background:var(--g75);border-radius:12px;padding:9px 14px 10px;
+        border:1px solid transparent;transition:all .15s}
+  .fbox:focus-within{border-color:var(--blue);background:#fff}
+  .fbox .lab{font-size:11px;color:var(--g400);display:block;font-weight:600;margin-bottom:1px}
+  .fbox input,.fbox select{border:none;background:none;font-family:inherit;font-size:14px;font-weight:700;
+        color:var(--g900);width:100%;padding:0;appearance:none;-webkit-appearance:none}
+  .fbox input:focus,.fbox select:focus{outline:none}
+  .fbox select{cursor:pointer}
+  .fbox .chev-ic{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--g400);pointer-events:none;font-size:11px}
+  .modal-head{display:flex;align-items:center;margin:0 -24px 16px;padding:0 18px 0 24px;border-bottom:1px solid var(--g100)}
+  .typetabs{display:flex;gap:16px;align-items:center;overflow-x:auto;scrollbar-width:none;flex:1}
+  .typetabs::-webkit-scrollbar{display:none}
+  .ttab{font-size:14px;font-weight:700;color:var(--g400);padding:11px 1px;white-space:nowrap;transition:color .15s;
+      border-bottom:2px solid transparent;margin-bottom:-1px}
+  .ttab:hover{color:var(--g700)}
+  .ttab.on{color:var(--g900);border-bottom-color:var(--g900)}
+  .ai-banner{background:#f2f8ff;border-radius:12px;padding:13px 14px;margin-bottom:16px;text-align:center}
+  .ai-grad{font-size:13px;font-weight:700;line-height:1.5;
+           background:linear-gradient(90deg,#2f7ef2,#7ab8f7,#9775fa,#4fb1f5,#2f7ef2);background-size:250% 100%;
+           -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+           animation:aiflow 3.5s linear infinite}
+  @keyframes aiflow{0%{background-position:0% 0}100%{background-position:250% 0}}
+  @media (prefers-reduced-motion:reduce){.ai-grad{animation:none}}
+  .formrow{display:flex;gap:12px;margin-top:12px}
+  .formrow .flab{width:58px;flex-shrink:0;font-size:13px;font-weight:700;color:var(--g700);padding-top:12px}
+  .formrow .fctrl{flex:1;min-width:0;position:relative}
+  .inp2{width:100%;height:48px;border:1px solid transparent;border-radius:12px;padding:0 14px;font-family:inherit;
+        font-size:14px;font-weight:500;color:var(--g900);background:var(--g75);box-sizing:border-box;transition:all .15s}
+  .inp2:hover{background:var(--g100)}
+  .inp2:focus{outline:none;border-color:var(--blue);background:#fff}
+  .plist2{display:flex;flex-direction:column;gap:0;margin-top:8px}
+  .prow2{display:flex;align-items:center;gap:10px;padding:7px 14px}
+  .prow2 .p2nm{font-size:13px;font-weight:600;line-height:1.3}
+  .prow2 .p2hint{font-size:10px;color:var(--g400);line-height:1.3}
+  .prow2 .p2info{flex:1;min-width:0}
+  .icbtn{width:26px;height:26px;border:none;background:none;color:var(--g500);
+         display:flex;align-items:center;justify-content:center;cursor:pointer;transition:color .12s;flex-shrink:0;position:relative}
+  .icbtn:hover{color:var(--g900)}
+  .icbtn svg{display:block}
+  [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%);
+       background:#fff;color:var(--g700);border:1px solid var(--g100);box-shadow:var(--sh-lift);
+       font-size:11px;font-weight:600;padding:6px 10px;border-radius:8px;
+       white-space:nowrap;z-index:60;pointer-events:none}
+  .prow2 .x{color:var(--g300);border:none;background:none;font-size:11px;cursor:pointer;padding:0 3px}
+  .prow2 .x:hover{color:var(--red)}
+  .modal-foot{display:flex;align-items:center;gap:8px;border-top:1px solid var(--g100);
+              margin:20px -24px -24px;padding:14px 18px;background:#fff;border-radius:0 0 var(--r-lg) var(--r-lg);
+              position:sticky;bottom:-24px;z-index:5}
+  .foot-chip{font-size:12px;font-weight:700;color:var(--blue-d);background:var(--blue-bg);border-radius:8px;padding:6px 11px;white-space:nowrap}
+  .modal-foot .fnote{font-size:12px;text-align:center;padding:4px 0;color:var(--g500);width:100%}
+  .modal-foot .btn{width:auto}
+  .modal-foot .btn.pri{margin-left:auto}
+  .fbox.big{padding:13px 14px}
+  .fbox.big input{font-size:16px;font-weight:800;letter-spacing:-.01em}
+  .cond-panel{background:var(--g50);border:1px solid var(--g100);border-radius:12px;padding:12px;margin-top:8px}
+  .cond-panel .chip-sel{background:var(--card);border:1px solid var(--g200);box-shadow:var(--sh)}
+  .cond-panel .chip-sel:hover{background:var(--g75)}
+  .cond-panel .chip-sel.on{background:var(--blue-bg);border-color:var(--blue-bg2)}
+  .cond-desc{font-size:11px;color:var(--g500);margin-bottom:9px;line-height:1.5}
+  .chip-sel.opened{border-color:var(--blue)}
+  .chip-sel b{font-weight:800}
+  .chips-row{display:flex;gap:6px;flex-wrap:wrap}
+  .chip-sel{padding:9px 13px;border-radius:999px;border:1px solid transparent;font-size:12px;font-weight:600;
+            color:var(--g600);background:var(--g75);cursor:pointer;transition:all .15s}
+  .chip-sel:hover{background:var(--g100)}
+  .chip-sel.on{color:var(--blue-d);background:var(--blue-bg);font-weight:700}
+  .plist{display:flex;flex-direction:column;gap:8px}
+  .prow{display:flex;align-items:center;gap:14px;border:1px solid var(--g100);border-radius:var(--r-md);
+        padding:12px 16px;background:var(--card);transition:box-shadow .15s}
+  .prow:hover{box-shadow:var(--sh)}
+  .pavatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+           font-weight:700;font-size:14px;color:#fff;flex-shrink:0}
+  .prow .nm{font-weight:700;font-size:14px}
+  .prow .hint{font-size:12px;color:var(--g400)}
+  .seg{display:flex;background:var(--g75);border-radius:999px;padding:3px}
+  .seg button{font-size:12px;font-weight:600;color:var(--g400);padding:5px 14px;border-radius:999px;transition:all .15s}
+  .seg button.on{background:#fff;color:var(--g900);box-shadow:0 1px 4px rgba(25,31,40,.12);font-weight:700}
+  .seg button.on.accent{color:var(--blue)}
+
+  /* ───────── 풀블리드·풀하이트 캘린더 베이스 (01·02) ───────── */
+  .screen.wide{max-width:none}
+  .stage.fullbleed{padding:14px 20px}
+  .screen.wide.on{height:calc(100vh - 84px);flex-direction:column;gap:10px}
+  .caloverlay{position:relative;flex:1;min-height:0;display:flex}
+  .caloverlay .calcard{flex:1;display:flex;flex-direction:column;min-height:0;width:100%}
+  .caloverlay .calgrid{flex:1;min-height:0;grid-template-rows:auto 1fr}
+  .panel.float{position:absolute;top:16px;right:16px;width:440px;z-index:5;
+               max-height:calc(100% - 32px);overflow:auto}
+  .screen.nudge .panel.float{animation:popNudge .7s cubic-bezier(.34,1.56,.64,1) .5s}
+  .screen.nudge .cand-blk.rank1,.screen.nudge #blkProp,.screen.nudge #blkProp4,.screen.nudge #blkRe,.screen.nudge #blkDone,.screen.nudge #blkCxl7{animation:popNudge .7s cubic-bezier(.34,1.56,.64,1) .5s}
+  /* 생성 모달 — 딤 없이 캘린더 위에 팝오버처럼 */
+  .modal-back{position:absolute;inset:0;pointer-events:none;
+              z-index:10;display:flex;align-items:flex-start;justify-content:flex-start}
+  .modal-back.hide{display:none}
+  .panel.flexcol{display:flex;flex-direction:column}
+  .panel.flexcol .modal-foot{margin-top:auto}
+  .panel.modal{position:relative;width:440px;max-height:100%;overflow:auto;pointer-events:auto;
+               border:1px solid var(--g100);box-shadow:0 24px 80px rgba(25,31,40,.25)}
+  .screen.nudge .panel.modal{animation:popNudge .7s cubic-bezier(.34,1.56,.64,1) .5s}
+  @keyframes popNudge{0%{transform:translateY(0)}32%{transform:translateY(-12px)}
+                      62%{transform:translateY(3px)}100%{transform:translateY(0)}}
+  @media (prefers-reduced-motion:reduce){.screen.on .panel.modal{animation:none}}
+
+  /* ───────── 좌측 사이드바 ───────── */
+  .calapp{flex:1;min-height:0;display:flex;gap:16px}
+  .sidebar{width:238px;flex-shrink:0;display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding:2px}
+  .make-wrap{position:relative}
+  .make-btn{display:flex;width:100%;align-items:center;justify-content:center;gap:9px;
+            background:var(--card);color:var(--blue);
+            border:1px solid var(--blue);border-radius:14px;padding:17px 20px;
+            font-size:15px;font-weight:800;letter-spacing:-.01em;transition:background .15s}
+  .make-btn:hover{background:var(--blue-bg)}
+  .make-btn .plus,.make-btn .lbl{color:var(--blue)}
+  .make-btn .plus{font-size:17px;font-weight:800;line-height:1}
+  .make-btn .car{font-size:9px;color:#7db4f0}
+  .make-menu{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);
+             border:1px solid var(--g100);border-radius:14px;box-shadow:var(--sh-lift);padding:6px;z-index:30}
+  .make-wrap.open .make-menu{display:block;animation:enter .18s ease}
+  .make-menu button{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:9px;
+                    font-size:13px;font-weight:700;color:var(--g700);transition:background .12s}
+  .make-menu button:hover{background:var(--g75)}
+  .make-menu button.mm-hero{color:var(--blue-d)}
+  .make-menu .mm-desc{display:block;font-size:11px;color:var(--g400);font-weight:400;margin-top:1px}
+  .sb-card{background:var(--card);border:1px solid var(--g100);border-radius:var(--r-md);padding:14px 16px}
+  .sb-title{font-size:12px;font-weight:700;color:var(--g400);margin-bottom:8px}
+  .mini{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px;text-align:center}
+  .mini .mh{font-size:10px;color:var(--g400);font-weight:700;padding:2px 0}
+  .mini .md{font-size:11px;color:var(--g600);padding:4px 0}
+  .mini .md.out{color:var(--g200)}
+  .mini .md.sel{background:var(--blue-bg);color:var(--blue-d);font-weight:700}
+  .mini .md.sel-s{border-radius:7px 0 0 7px}
+  .mini .md.sel-e{border-radius:0 7px 7px 0}
+  .sb-check{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--g600);padding:4px 0;
+            cursor:pointer;user-select:none}
+  .sb-check:hover{color:var(--g900)}
+  .sb-check .cbx{width:15px;height:15px;border-radius:4px;flex-shrink:0;display:flex;align-items:center;
+                 justify-content:center;color:#fff;font-size:9px;font-weight:800;box-sizing:border-box}
+  .sb-item{display:flex;flex-direction:column;gap:1px;padding:10px 12px;border-radius:10px;
+           background:var(--g50);margin-top:6px}
+  .sb-item .si-t{font-size:12px;font-weight:700}
+  .sb-item .si-s{font-size:11px;color:var(--g400)}
+  .sb-item .si-t .role{font-size:10px;font-weight:700;border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+  .role.host{background:var(--blue-bg);color:var(--blue-d)}
+  .role.guest{background:rgba(25,31,40,.07);color:var(--g500)}
+  .st-pill{font-size:10px;font-weight:700;border-radius:5px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+  .st-pill.ing{background:var(--amber-bg);color:var(--amber)}
+  .st-pill.done{background:rgba(25,31,40,.07);color:var(--g500)}
+  .st-pill.esc{background:var(--red-bg);color:var(--red)}
+  @media (max-width:1020px){
+    .calapp{display:block}
+    .sidebar{display:none}
+  }
+  .modal-x{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+           color:var(--g700);padding:0;transition:all .15s;flex-shrink:0}
+  .modal-x:hover{color:var(--g900);background:var(--g75)}
+  .modal-x[data-tip]:hover::after,.banner-log[data-tip]:hover::after{content:none} /* JS 고정 툴팁 사용 */
+  #fixtip{position:fixed;background:#fff;color:var(--g700);border:1px solid var(--g100);box-shadow:var(--sh-lift);
+          font-size:11px;font-weight:600;padding:6px 10px;border-radius:8px;white-space:nowrap;z-index:99;
+          pointer-events:none;transform:translate(-50%,-100%)}
+  .btn-new{display:inline-flex;align-items:center;gap:6px;background:var(--blue);color:#fff;font-size:13px;
+           font-weight:700;border-radius:10px;padding:9px 16px;transition:all .15s;box-shadow:0 2px 8px rgba(49,130,246,.3)}
+  .btn-new:hover{background:var(--blue-d)}
+  @media (max-width:1020px){
+    .screen.wide.on{height:auto}
+    .caloverlay{display:block}
+    .caloverlay .calgrid{min-height:480px}
+    .panel.float{position:static;width:100%;margin-top:14px;max-height:none}
+    .modal-back{position:fixed;border-radius:0;align-items:center;justify-content:center;padding:20px}
+  }
+  .calcard{background:var(--card);border:1px solid var(--g100);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden}
+  .calhead{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--g100);position:relative}
+  .calmsg{font-size:12px;font-weight:600;
+          border-radius:8px;padding:4px 12px;color:var(--blue);border:1px solid var(--blue-bg2);background:var(--blue-bg);white-space:nowrap}
+  .calhead .month{font-size:20px;font-weight:800;letter-spacing:-.015em}
+  .calhead .range{font-size:12px;color:var(--g400)}
+  .calhead .today{margin-left:auto;font-size:12px;font-weight:600;color:var(--g500);border:1px solid var(--g100);
+                  border-radius:8px;padding:4px 10px;background:var(--card)}
+  .calhead button.today:hover{background:var(--g75);color:var(--g900)}
+  .chev{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+        color:var(--g700);font-weight:700;border:1px solid var(--g100);background:var(--card);font-size:16px;
+        line-height:1;transition:all .15s;flex-shrink:0}
+  .chev:hover{background:var(--g75);color:var(--g900)}
+  .today + .chev{margin-left:8px}
+  .chev + .chev{margin-left:-7px}
+  .calgrid{display:grid;grid-template-columns:46px repeat(7,1fr)}
+  .daycol.wknd{background-color:var(--g50)}
+  .dw.sun{color:#d9605c} .dw.sat{color:#5a8fd8}
+  .dayhead{padding:10px 0 8px;text-align:center;border-left:1px solid var(--g75);border-bottom:1px solid var(--g100)}
+  .dayhead .dw{font-size:11px;color:var(--g400);font-weight:600}
+  .dayhead .dn{font-size:15px;font-weight:800;margin-top:1px}
+  .dayhead .dn.today{background:var(--blue);color:#fff;width:26px;height:26px;border-radius:50%;
+                     display:flex;align-items:center;justify-content:center;margin:1px auto 0}
+  .dayhead .dw.today-w{color:var(--blue);font-weight:700}
+  .mini .md.today{background:var(--blue);color:#fff;font-weight:700;border-radius:999px}
+  .cal-corner{border-bottom:1px solid var(--g100)}
+  .timecol{position:relative}
+  .timecol span{position:absolute;right:8px;font-size:10px;color:var(--g300);transform:translateY(-50%)}
+  .daycol{position:relative;border-left:1px solid var(--g75);
+          background-image:linear-gradient(to top,var(--g75) 1px,transparent 1px);
+          background-size:100% var(--hh,50px)}
+  .evt{position:absolute;left:4px;right:4px;border-radius:7px;padding:5px 8px;font-size:11px;line-height:1.35;
+       font-weight:600;background:var(--blue-bg);color:var(--blue-d);overflow:hidden}
+  .evt .et{font-weight:400;opacity:.75;font-size:10px}
+  .evt.c-team{background:#f1ecfd;color:#7048e8}
+  .evt.c-room2{background:#e9f7ec;color:#2b8a3e}
+  .evt.c-room4{background:#e3f4f8;color:#0b7285}
+  .evt.c-room1{background:#f1f8e5;color:#5c940d}
+  .evt.c-room3{background:#e6f8f2;color:#099268}
+  .evt.half-l,.cand-blk.half-l{right:calc(50% + 2px)}
+  .evt.half-r,.cand-blk.half-r{left:calc(50% + 2px)}
+  .evt.th-1{right:calc(66.66% + 2px)}
+  .evt.th-2{left:calc(33.33% + 2px);right:calc(33.33% + 2px)}
+  .evt.th-3{left:calc(66.66% + 2px)}
+  .drow{display:flex;gap:10px;font-size:13px;font-weight:500;color:var(--g900);padding:5px 0;align-items:center}
+  .drow .di{width:20px;text-align:center;flex-shrink:0}
+  .att-r{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g900);padding:4px 0}
+  .att-r img{width:24px;height:24px;border-radius:50%;object-fit:cover;display:block}
+  .avw{position:relative;display:inline-flex;flex-shrink:0}
+  .avw i{position:absolute;right:-4px;bottom:-2px;width:13px;height:13px;border-radius:50%;
+         border:1px solid #fff;box-sizing:border-box;font-style:normal}
+  .avw i::after{color:#fff;font-size:8px;font-weight:800;position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)}
+  .avw .ok{background:var(--green)}   .avw .ok::after{content:"✓"}
+  .avw .no{background:var(--red)}     .avw .no::after{content:"✕"}
+  .avw .na{background:var(--g300)}    .avw .na::after{content:"–"}
+  .avw .alt{background:#f59f00}       .avw .alt::after{content:"↻";font-size:9px}
+  .att-r span{color:var(--g400);font-size:11px}
+  button.evt{border:none;font-family:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start}
+  .evt.c-jh{background:#fdf3da;color:#9a6b00}
+  .evt.cxl{background:var(--g75);color:var(--g400)}
+  .att-r .ast{margin-left:auto;font-size:11px;color:var(--g400);flex-shrink:0}
+  .att-r .ast.g{color:var(--green);font-weight:600}
+  .att-r .ast.a{color:var(--amber);font-weight:600}
+  .att-r .ast.r{color:var(--red);font-weight:600}
+  .evt.away{background:var(--amber-bg);color:var(--amber)}
+  .evt.dim{background:var(--g75);color:var(--g500)}
+
+  /* 02 — 캘린더 위 후보 블록 */
+  .cand-blk{position:absolute;left:4px;right:4px;border-radius:8px;padding:6px 9px;font-size:11px;line-height:1.35;
+            font-weight:700;cursor:pointer;transition:all .15s;text-align:left;z-index:2;border:none;font-family:inherit}
+  .cand-blk .cbscore{font-size:10px;font-weight:700;opacity:.8}
+  .cand-blk.rank1{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(49,130,246,.4)}
+  .cand-blk.rank1:hover{background:var(--blue-d);transform:translateY(-1px)}
+  .cand-blk.rank2{background:var(--card);color:var(--green);border:1px dashed var(--green)}
+  .cand-blk.rank3{background:var(--card);color:var(--amber);border:1px dashed var(--amber)}
+  .cand-blk.rank2:hover,.cand-blk.rank3:hover{transform:translateY(-1px);box-shadow:var(--sh)}
+  .daycol.excluded{background:repeating-linear-gradient(135deg,var(--g75) 0 6px,transparent 6px 12px)}
+  .exlabel{position:absolute;top:8px;left:4px;right:4px;text-align:center;font-size:10px;font-weight:700;
+           color:var(--g400);background:var(--g50);border:1px dashed var(--g200);border-radius:6px;padding:4px 2px;z-index:2}
+
+  /* 02 — 플로팅 추천 패널 */
+  .rankrow{display:flex;gap:16px;align-items:flex-start;border:1px solid var(--g100);border-radius:var(--r-md);
+           padding:12px 14px;background:var(--card);cursor:pointer;transition:all .15s;width:100%;text-align:left;font-family:inherit}
+  .rankrow:hover{border-color:var(--g300)}
+  .rankrow.best{border:1px solid transparent;
+       background:linear-gradient(#f2f8ff,#f2f8ff) padding-box,
+                  linear-gradient(90deg,#2f7ef2,#7ab8f7,#9775fa,#4fb1f5,#2f7ef2) border-box;
+       background-size:100% 100%,250% 100%;animation:aiflow 3.5s linear infinite}
+  @media (prefers-reduced-motion:reduce){.rankrow.best{animation:none}}
+  .tierb{font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;
+         align-self:center}
+  .tierb.t1{background:linear-gradient(115deg,#2f7ef2,#7ab8f7,#9775fa,#4fb1f5,#2f7ef2);
+            background-size:250% 100%;animation:aiflow 3.5s linear infinite;color:#fff}
+  .tierb.t2{background:var(--green-bg);color:var(--green)}
+  .tierb.t3{background:var(--amber-bg);color:var(--amber)}
+  .rankrow .rw{font-size:14px;font-weight:800}
+  .rankrow .rh{font-size:11px;color:var(--g500);margin-top:2px;line-height:1.5}
+
+  .panel{background:var(--card);border:1px solid var(--g100);border-radius:var(--r-lg);box-shadow:var(--sh-lift);padding:24px}
+  .panel h2{font-size:17px}
+  .panel .sect{margin:18px 0 8px}
+  .panel .fld{width:100%}
+  .panel .frow{gap:8px}
+  .panel .frow .fld{flex:1;min-width:0}
+  .panel .prow{padding:8px 12px;gap:10px;flex-wrap:wrap}
+  .panel .pavatar{width:30px;height:30px;font-size:12px}
+  .panel .prow .nm{font-size:13px}
+  .panel .prow .hint{font-size:11px}
+  .panel .seg button{padding:4px 9px;font-size:11px}
+  .panel .btnrow{margin-top:20px}
+  .panel .btn{width:100%}
+
+  /* 투 티어: 기본 + 상세 옵션 */
+  .chiprow{display:flex;flex-wrap:wrap;gap:6px}
+  .chip-p{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--g100);background:var(--g50);
+          border-radius:999px;padding:4px 12px 4px 4px;font-size:12px;font-weight:600}
+  .chip-p .pavatar{width:22px;height:22px;font-size:10px}
+  .chip-p .x{margin-left:2px;color:var(--g300);font-size:11px;cursor:pointer;border:none;background:none;
+             padding:0 2px;font-family:inherit}
+  .chip-p .x:hover{color:var(--red)}
+  .pdrop{position:absolute;left:0;right:0;top:50px;background:#fff;border:1px solid var(--g100);
+         border-radius:12px;box-shadow:var(--sh-lift);padding:4px;z-index:40;display:none}
+  .pdrop.show{display:block}
+  .pdrop .pd-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:8px;
+                  cursor:pointer;text-align:left;border:none;background:none;font-family:inherit}
+  .pdrop .pd-item:hover{background:var(--g75)}
+  .pdrop .pd-nm{font-size:13px;font-weight:600}
+  .pdrop .pd-em{font-size:11px;color:var(--g400)}
+  .pdrop .pd-none{padding:10px 12px;font-size:12px;color:var(--g400)}
+  .defaults{background:var(--g50);border:1px solid var(--g100);border-radius:var(--r-sm);padding:12px 14px;
+            font-size:12px;color:var(--g500);line-height:1.7}
+  .defaults b{color:var(--g600);font-weight:700}
+
+  /* ───────── 후보 카드 (02 추천) ───────── */
+  .cands{display:flex;flex-direction:column;gap:12px}
+  .cand{position:relative;border:1px solid var(--g100);border-radius:var(--r-md);padding:20px 24px;
+        display:flex;gap:20px;background:var(--card);cursor:pointer;transition:all .18s;text-align:left;width:100%}
+  .cand:hover{border-color:var(--g300);box-shadow:var(--sh-lift);transform:translateY(-1px)}
+  .cand.best{border-color:var(--blue);background:linear-gradient(0deg,var(--blue-bg),var(--blue-bg));border-width:1px}
+  .cand.best:hover{border-color:var(--blue-d)}
+  .cand .badge-best{position:absolute;top:-9px;left:20px;background:var(--blue);color:#fff;font-size:11px;
+                    font-weight:700;padding:2px 10px;border-radius:999px}
+  .rankcol{display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:3px;width:52px;flex-shrink:0}
+  .rankcol .sc{font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--g900)}
+  .cand.best .rankcol .sc{color:var(--blue-d)}
+  .rankcol .scl{font-size:10px;color:var(--g400);font-weight:600}
+  .scorebar{width:44px;height:4px;border-radius:2px;background:var(--g100);overflow:hidden;margin-top:4px}
+  .scorebar i{display:block;height:100%;border-radius:2px;background:var(--blue)}
+  .cand .when{font-size:17px;font-weight:800;letter-spacing:-.01em}
+  .cand .whensub{font-size:12px;color:var(--g500);margin-top:1px}
+  .why{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .tag{font-size:12px;font-weight:600;padding:4px 10px;border-radius:7px;background:var(--g75);color:var(--g600);
+       display:inline-flex;align-items:center;gap:4px}
+  .tag.g{background:var(--green-bg);color:var(--green)}
+  .tag.w{background:var(--amber-bg);color:var(--amber)}
+  .excl{border:1px dashed var(--g200);border-radius:var(--r-md);padding:14px 20px;font-size:13px;color:var(--g500)}
+  .excl b{color:var(--g600)}
+  .holdnote{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g500);margin-top:10px}
+
+  /* ───────── 수신 카드 (03) ───────── */
+  .invitewrap{max-width:520px;margin:0 auto;width:100%}
+  .invite-card{background:var(--card);border:1px solid var(--g100);border-radius:var(--r-lg);padding:36px;
+               box-shadow:var(--sh-lift);text-align:center}
+  .invite-card .from{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--g500)}
+  .invite-card .from .ravatar{width:24px;height:24px;border-radius:50%;background:#3182f6;color:#fff;
+                              font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .invite-card .title{font-size:15px;font-weight:600;color:var(--g500);margin-top:20px}
+  .invite-card .when{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px;line-height:1.35}
+  .invite-card .room{font-size:14px;color:var(--g600);margin-top:8px}
+  .ddl{display:inline-flex;align-items:center;gap:6px;margin-top:18px;font-size:13px;font-weight:600;
+       background:var(--amber-bg);color:var(--amber);border-radius:999px;padding:6px 14px}
+  .silence{font-size:13px;color:var(--g400);margin-top:18px;line-height:1.6}
+  .invite-card .btnrow{justify-content:center}
+
+  /* ───────── 이의 (04) ───────── */
+  .tier-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--g400)}
+  .tier-label .tn{background:var(--g75);border-radius:6px;padding:1px 7px;font-size:11px}
+  .opt{border:1px solid var(--g100);border-radius:var(--r-md);padding:16px 20px;display:flex;align-items:center;
+       gap:14px;background:var(--card);cursor:pointer;transition:all .15s;width:100%;text-align:left}
+  .opt:hover{border-color:var(--g300)}
+  .opt.hero-opt{border-color:var(--blue-bg2);background:var(--blue-bg)}
+  .opt.hero-opt:hover{border-color:var(--blue)}
+  .opt.sel{border-color:var(--blue);background:var(--blue-bg)}
+  .opt .cb{width:22px;height:22px;border-radius:7px;border:2px solid var(--g200);flex-shrink:0;display:flex;
+           align-items:center;justify-content:center;color:#fff;font-size:13px;transition:all .15s}
+  .opt.sel .cb{background:var(--blue);border-color:var(--blue)}
+  .opt .ic{width:38px;height:38px;border-radius:10px;background:#fff;border:1px solid var(--g100);
+           display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+  .opt .ow{font-weight:800;font-size:14px}
+  .opt .oh{font-size:12px;color:var(--g500);margin-top:2px}
+  .optgap{height:8px}
+
+  /* ───────── 타임라인 (05) ───────── */
+  .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}
+  @media (max-width:820px){.grid2{grid-template-columns:1fr}}
+  .tl{display:flex;flex-direction:column;position:relative;padding-left:6px}
+  .tli{display:flex;gap:16px;padding:12px 0;position:relative}
+  .tli::before{content:"";position:absolute;left:4px;top:0;height:18px;width:1px;background:var(--g100)}
+  .tli::after{content:"";position:absolute;left:4px;top:32px;bottom:0;width:1px;background:var(--g100)}
+  .tli:first-child::before{display:none}
+  .tli:last-child::after{display:none}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--g200);margin-top:9px;flex-shrink:0;z-index:1}
+  .dot.b{background:var(--blue)} .dot.g{background:var(--green)} .dot.r{background:var(--red)}
+  .tli .tt{font-size:14px;line-height:22px;padding:2px 0 0 0}
+  .tli .tt b{font-weight:700}
+  .tli .tm{font-size:12px;color:var(--g400);margin-top:0}
+  .autotag{display:inline-block;font-size:10px;font-weight:700;color:var(--blue-d);background:var(--blue-bg);
+           border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+  .ddl-banner{display:flex;align-items:center;gap:10px;background:var(--amber-bg);border:1px solid #f2e4bd;
+              border-radius:var(--r-md);padding:14px 18px;font-size:13px;color:var(--amber);font-weight:600}
+  .pill{font-size:12px;padding:4px 12px;border-radius:999px;font-weight:700;white-space:nowrap}
+  .pill.wait{background:var(--g75);color:var(--g400)}
+  .pill.ok{background:var(--green-bg);color:var(--green)}
+  .pill.no{background:var(--red-bg);color:var(--red)}
+
+  /* ───────── 확정 (06) ───────── */
+  .done-hero{text-align:center;padding:48px 32px}
+  .done-hero .ic{width:64px;height:64px;border-radius:50%;background:var(--green-bg);color:var(--green);
+                 font-size:28px;display:flex;align-items:center;justify-content:center;margin:0 auto}
+  .done-hero h2{font-size:24px;margin-top:18px}
+  .meetcard{max-width:440px;margin:24px auto 0;border:1px solid var(--g100);border-radius:var(--r-md);
+            padding:20px 24px;text-align:left;background:var(--g50)}
+  .meetcard .mrow{display:flex;justify-content:space-between;font-size:14px;padding:5px 0}
+  .meetcard .mrow .k{color:var(--g400)}
+  .meetcard .mrow .v{font-weight:700}
+  .metrics{display:flex;gap:10px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+  .metric{border:1px solid var(--g100);border-radius:var(--r-md);padding:16px 24px;min-width:150px;background:var(--card)}
+  .metric .n{font-size:22px;font-weight:800;color:var(--blue);letter-spacing:-.02em}
+  .metric .l{font-size:12px;color:var(--g500);margin-top:2px}
+
+  /* ───────── 에스컬레이션 (분기) ───────── */
+  .branch-band{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--amber);
+               background:var(--amber-bg);border-radius:999px;padding:5px 14px;margin-bottom:6px}
+  .toff{border:1px solid var(--g100);border-radius:var(--r-md);padding:20px 24px;background:var(--card);
+        cursor:pointer;transition:all .18s;width:100%;text-align:left}
+  .toff:hover{border-color:var(--amber);box-shadow:var(--sh-lift);transform:translateY(-1px)}
+  .toff .tw{font-size:16px;font-weight:800}
+  .toff .sac{margin-top:6px;font-size:13px;color:var(--g600);line-height:1.6}
+  .toff .sac b{color:var(--red)}
+  .toff .sac b.soft{color:var(--amber)}
+
+  /* ───────── 설계 노트 드로어 ───────── */
+  .notebtn{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+           color:var(--g500);transition:all .15s;flex-shrink:0}
+  .notebtn:hover{background:var(--g75);color:var(--g900)}
+  body.note-open .notebtn{background:var(--g100);color:var(--g900)}
+  .nd-view{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--g100);
+           border-radius:999px;padding:5px 14px 5px 6px;font-size:12px;font-weight:700;width:fit-content;
+           margin-bottom:20px;color:var(--g900)}
+  .nd-view .sub{color:var(--g400);font-weight:600}
+  #noteViewWrap .nd-step{margin-bottom:6px}
+  .stage{transition:margin-right .3s cubic-bezier(.2,.7,.3,1)}
+  body.note-open .stage{margin-right:340px}
+  .notedrawer{position:fixed;top:56px;right:0;bottom:0;width:340px;background:var(--g50);
+              border-left:1px solid var(--g200);z-index:55;transform:translateX(100%);
+              transition:transform .3s cubic-bezier(.2,.7,.3,1);display:flex;flex-direction:column}
+  body.note-open .notedrawer{transform:none}
+  .nd-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
+           border-bottom:1px solid var(--g100);font-weight:800;font-size:14px;flex-shrink:0}
+  .nd-x{width:28px;height:28px;border-radius:50%;background:var(--g75);color:var(--g500);font-size:12px;
+        display:flex;align-items:center;justify-content:center}
+  .nd-x:hover{background:var(--g100);color:var(--g900)}
+  .nd-body{padding:20px;font-size:13px;color:var(--g600);line-height:1.85;overflow-y:auto}
+  .nd-body b{color:var(--blue-d)}
+  .nd-step{font-size:11px;font-weight:700;color:var(--g400);letter-spacing:.04em;margin-bottom:10px}
+  @media (max-width:900px){body.note-open .stage{margin-right:0}.notedrawer{width:min(340px,90vw)}}
+
+  /* ───────── 하단 내비 ───────── */
+  .bottomnav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:60;
+             background:var(--card);border:1px solid var(--g100);border-radius:999px;padding:6px;box-shadow:var(--sh-lift)}
+  .bottomnav button{font-size:13px;font-weight:700;padding:10px 20px;border-radius:999px;color:var(--g600);transition:all .15s}
+  .bottomnav button:hover{background:var(--g75)}
+  .bottomnav button.next{background:var(--g900);color:#fff}
+  .bottomnav button.next:hover{background:#000}
+  .bottomnav button:disabled{opacity:.3;cursor:not-allowed}
+  .bottomnav .pos{font-size:12px;color:var(--g400);align-self:center;padding:0 8px;font-variant-numeric:tabular-nums}
+
+  /* ───────── 토스트 ───────── */
+  #toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--g900);color:#fff;
+         font-size:13px;line-height:1.55;padding:14px 22px;border-radius:14px;max-width:460px;text-align:center;
+         z-index:99;box-shadow:0 8px 30px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+</style>
+</head>
+<body class="note-open">
+
+<nav class="topbar">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+      <path d="M2.5 5.5 A3 3 0 0 1 5.5 2.5 H18.5 A3 3 0 0 1 21.5 5.5 V15.5 L15.5 21.5 H5.5 A3 3 0 0 1 2.5 18.5 Z" fill="#4a7de2"/>
+      <path d="M21.5 15.5 L15.5 21.5 V18.5 A3 3 0 0 1 18.5 15.5 Z" fill="#2f5bb7"/>
+      <circle cx="7.3" cy="6" r="1.25" fill="#fff"/>
+      <circle cx="16.7" cy="6" r="1.25" fill="#fff"/>
+      <text x="11.6" y="17.2" text-anchor="middle" font-size="10" font-weight="700" fill="#fff"
+            font-family="Pretendard Variable,Pretendard,sans-serif">31</text>
+    </svg>
+    <span>모두의<span style="font-weight:500;margin-left:3px">시간</span></span></div>
+  <div class="stepper" id="stepper"></div>
+  <div class="calctrls" id="calctrls">
+    <div class="viewseg">
+      <button>일</button><button class="on">주</button><button>월</button><span class="divi"></span><button>년</button>
+    </div>
+    <button class="iconbtn" title="검색">
+      <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+        <circle cx="9" cy="9" r="5.5"/><line x1="13.5" y1="13.5" x2="17" y2="17"/>
+      </svg>
+    </button>
+    <button class="iconbtn" title="설정">
+      <svg width="17" height="17" viewBox="0 -960 960 960" fill="currentColor"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-1 13.5l103 78-110 190-119-50q-11 8-23 15t-24 12L590-80H370Zm112-260q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Z"/></svg>
+    </button>
+  </div>
+  <div class="rolechip" id="rolechip" style="cursor:pointer"></div>
+  <button class="notebtn" onclick="toggleNote()" title="설계 노트">
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <rect x="2.5" y="3.5" width="15" height="13" rx="2.5"/><line x1="12.5" y1="3.5" x2="12.5" y2="16.5"/>
+    </svg>
+  </button>
+</nav>
+
+<aside class="notedrawer" id="noteDrawer">
+  <div class="nd-head">디자인 의도 <button class="nd-x" onclick="toggleNote()">✕</button></div>
+  <div class="nd-body">
+    <div id="noteViewWrap">
+      <div class="nd-step">이 화면을 보는 사람</div>
+      <div class="nd-view" id="noteView"></div>
+    </div>
+    <div class="nd-step" id="noteStep"></div>
+    <div id="noteBody"></div>
+  </div>
+</aside>
+
+<main class="stage">
+
+  <!-- ═══════ 커버: 문제 정의 ═══════ -->
+  <section class="screen" data-step="0">
+    <div class="cover">
+      <div class="eyebrow">6명이 회의 일정을 잡는 경험</div>
+      <h1>회의 조율의 진짜 고통은<br>첫 제안이 아니라 <span class="dim">실패한 이후</span>에 있다</h1>
+      <div class="prob">
+        기존 도구는 <b>첫 제안까지만</b> 지원합니다. 불참이 뜨고, 응답이 없고, 슬랙에서 재협상이 벌어지는
+        구간 — 조율 비용의 대부분이 발생하는 이 구간이 <b>제품 밖에</b> 있습니다.
+        시간을 어렵게 합의해도 미팅룸이 없으면 원점으로 돌아가는 <b>이중 실패</b>까지 겹칩니다.
+      </div>
+      <div class="stats">
+        <div class="cstat"><div class="n">주 4.2건</div><div class="l">재조정되는 회의</div><div class="s">Reclaim.ai</div></div>
+        <div class="cstat"><div class="n">43%</div><div class="l">주 3시간+ 을 조율에 사용</div><div class="s">Calendly 2024</div></div>
+        <div class="cstat"><div class="n">30통</div><div class="l">그룹 회의 1건당 이메일</div><div class="s">Doodle 2019</div></div>
+      </div>
+      <div class="hypo"><b>가설</b> — 재협상을 원탭 구조화 인터랙션으로 만들면, 사람들은 슬랙으로 이탈하지 않고 제품 안에서 응답할 것이다. 그러면 조율은 주최자 액션 1회로 끝난다.</div>
+      <div class="btnrow">
+        <button class="btn pri" onclick="go(1)">플로우 시작하기 →</button>
+        <span style="font-size:12px;color:var(--g400)">키보드 ←→ 로도 이동할 수 있어요</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 01 생성 — 풀하이트 캘린더 + 중앙 모달 ═══════ -->
+  <section class="screen wide" data-step="1">
+    <div class="calapp">
+      <aside class="sidebar">
+        <div class="make-wrap" id="mk1">
+          <button class="make-btn" onclick="toggleMake('mk1')"><span class="plus">＋</span><span class="lbl">만들기</span><span class="car">▼</span></button>
+          <div class="make-menu">
+            <button class="mm-hero" onclick="toggleMake('mk1');openCreate()">새 회의<span class="mm-desc">조건만 넣으면 시간은 시스템이 찾아요</span></button>
+            <button onclick="toggleMake('mk1');toast('일반 일정은 기존 방식대로 시간을 직접 골라 등록해요.')">일정<span class="mm-desc">시간을 직접 지정해요</span></button>
+            <button onclick="toggleMake('mk1');toast('할 일은 시간 없이 등록돼요.')">할 일<span class="mm-desc">시간 없이 등록해요</span></button>
+            <button onclick="toggleMake('mk1');toast('부재중: 자리 비움 등록 — 이 시간은 조율에서 자동 제외돼요.')">부재중<span class="mm-desc">조율에서 자동 제외</span></button>
+            <button onclick="toggleMake('mk1');toast('바쁨: 방해 금지 블록 — 회피 선호 신호로 학습돼요.')">바쁨<span class="mm-desc">회피 신호로 학습</span></button>
+            <button onclick="toggleMake('mk1');toast('외근: 장소 제약 신호로 학습돼요 — 지훈님의 수요일 제외가 이 데이터에서 나와요.')">외근<span class="mm-desc">장소 제약 신호로 학습</span></button>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">2026년 7월</div>
+          <div class="mini">
+            <span class="mh" style="color:#d9605c">일</span><span class="mh">월</span><span class="mh">화</span><span class="mh">수</span><span class="mh">목</span><span class="mh">금</span><span class="mh" style="color:#5a8fd8">토</span>
+            <span class="md out">28</span><span class="md out">29</span><span class="md out">30</span><span class="md">1</span><span class="md">2</span><span class="md">3</span><span class="md">4</span>
+            <span class="md sel sel-s">5</span><span class="md sel today">6</span><span class="md sel">7</span><span class="md sel">8</span><span class="md sel">9</span><span class="md sel">10</span><span class="md sel sel-e">11</span>
+            <span class="md">12</span><span class="md">13</span><span class="md">14</span><span class="md">15</span><span class="md">16</span><span class="md">17</span><span class="md">18</span>
+            <span class="md">19</span><span class="md">20</span><span class="md">21</span><span class="md">22</span><span class="md">23</span><span class="md">24</span><span class="md">25</span>
+            <span class="md">26</span><span class="md">27</span><span class="md">28</span><span class="md">29</span><span class="md">30</span><span class="md">31</span><span class="md out">1</span>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">내 캘린더</div>
+          <div class="sb-check" data-cal="mine" onclick="toggleCal('mine')"><span class="cbx" style="background:#3182f6">✓</span>이가영</div>
+          <div class="sb-check" data-cal="team" onclick="toggleCal('team')"><span class="cbx" style="background:#9775fa">✓</span>디자인팀</div>
+          <div class="sb-title" style="margin-top:14px">회의실</div>
+          <div class="sb-check" data-cal="room1" onclick="toggleCal('room1')"><span class="cbx" style="background:#66a80f">✓</span>미팅룸 1</div>
+          <div class="sb-check" data-cal="room2" onclick="toggleCal('room2')"><span class="cbx" style="background:#2f9e44">✓</span>미팅룸 2</div>
+          <div class="sb-check" data-cal="room3" onclick="toggleCal('room3')"><span class="cbx" style="background:#0ca678">✓</span>미팅룸 3</div>
+          <div class="sb-check" data-cal="room4" onclick="toggleCal('room4')"><span class="cbx" style="background:#0c8599">✓</span>미팅룸 4</div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">진행 중인 조율</div>
+          <div class="sb-item" style="cursor:pointer" onclick="toast('데모에서는 이 조율의 화면은 준비되어 있지 않아요.')"><span class="si-t">마케팅 캠페인 싱크<span class="role guest">참석</span><span class="st-pill ing">조율중</span></span><span class="si-s">화 4:00 제안 받음 · 다른 의견 없으면 내일 확정</span></div>
+        </div>
+      </aside>
+
+    <div class="caloverlay">
+      <div class="calcard">
+        <div class="calhead">
+          <span class="month">2026년 7월</span>          <button class="today" onclick="toast('오늘이 있는 주로 이동해요 — 지금 보이는 주가 오늘(월 7/6)이 있는 주예요.')">오늘</button>
+          <button class="chev" onclick="toast('이전 주(6/28 – 7/4)로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">‹</button>
+          <button class="chev" onclick="toast('다음 주(7/12 – 7/18)로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">›</button>
+        </div>
+        <div class="calgrid">
+          <div class="cal-corner"></div>
+          <div class="dayhead"><div class="dw sun">일</div><div class="dn">5</div></div>
+          <div class="dayhead"><div class="dw today-w">월</div><div class="dn today">6</div></div>
+          <div class="dayhead"><div class="dw">화</div><div class="dn">7</div></div>
+          <div class="dayhead"><div class="dw">수</div><div class="dn">8</div></div>
+          <div class="dayhead"><div class="dw">목</div><div class="dn">9</div></div>
+          <div class="dayhead"><div class="dw">금</div><div class="dn">10</div></div>
+          <div class="dayhead"><div class="dw sat">토</div><div class="dn">11</div></div>
+
+          <div class="timecol">
+            <span data-h="9">9시</span><span data-h="10">10시</span><span data-h="11">11시</span>
+            <span data-h="12">12시</span><span data-h="13">13시</span><span data-h="14">14시</span>
+            <span data-h="15">15시</span><span data-h="16">16시</span><span data-h="17">17시</span>
+          </div>
+          <div class="daycol wknd"><!-- 일 --></div>
+          <div class="daycol"><!-- 월 -->
+            <div class="evt th-1" data-s="10" data-e="11" data-cal="mine">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-s="10" data-e="11" data-cal="team">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt half-l" data-s="14" data-e="15.5" data-cal="mine">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt c-room2 half-r" data-cal="room2" data-s="14" data-e="15.5">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt" data-cal="mine" data-s="16" data-e="17">디자인 QA<div class="et">16:00 – 17:00</div></div>
+          </div>
+          <div class="daycol"><!-- 화 -->
+            <div class="evt" data-s="11" data-e="12" data-cal="mine">UT 준비<div class="et">11:00 – 12:00</div></div>
+            <div class="evt c-room2" data-cal="room2" data-s="9.5" data-e="10.5">채용 인터뷰<div class="et">9:30 – 10:30 · 미팅룸 2</div></div>
+            <div class="evt" data-cal="mine" data-s="13" data-e="14">토큰 스펙 정리<div class="et">13:00 – 14:00</div></div>
+            <div class="evt c-room1" data-cal="room1" data-s="14" data-e="15">스프린트 플래닝<div class="et">14:00 – 15:00 · 미팅룸 1</div></div>
+          </div>
+          <div class="daycol"><!-- 수 -->
+            <div class="evt half-l" data-s="13" data-e="14" data-cal="mine">디자인팀 회의<div class="et">13:00 – 14:00</div></div>
+            <div class="evt c-team half-r" data-s="13" data-e="14" data-cal="team">디자인팀 회의<div class="et">13:00 – 14:00</div></div>
+            <div class="evt" data-cal="mine" data-s="10" data-e="11">UT 세션 준비<div class="et">10:00 – 11:00</div></div>
+            <div class="evt c-room3" data-cal="room3" data-s="15" data-e="16">전사 발표 리허설<div class="et">15:00 – 16:00 · 미팅룸 3</div></div>
+          </div>
+          <div class="daycol"><!-- 목 -->
+            <div class="evt half-l" data-s="10" data-e="11" data-cal="mine">리드 1:1<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 half-r" data-cal="room1" data-s="10" data-e="11">리드 1:1<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt" data-cal="mine" data-s="16" data-e="17">PP 리뷰 B그룹<div class="et">16:00 – 17:00</div></div>
+          </div>
+          <div class="daycol"><!-- 금 -->
+            <div class="evt" data-s="15" data-e="16" data-cal="mine">UT 참관<div class="et">15:00 – 16:00</div></div>
+            <div class="evt th-1" data-cal="mine" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-cal="team" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room4" data-cal="room4" data-s="14" data-e="15">영업팀 데모<div class="et">14:00 – 15:00 · 미팅룸 4</div></div>
+          </div>
+          <div class="daycol wknd"><!-- 토 --></div>
+        </div>
+      </div>
+
+      <div class="modal-back" id="createBack" onclick="if(event.target===this)closeCreate()">
+      <div class="panel modal" id="createPanel">
+        <div class="modal-head">
+        <div class="typetabs">
+          <button class="ttab on">회의 조율</button>
+          <button class="ttab" onclick="toast('일정: 시간을 직접 골라 등록해요. 입력한 제목·참석자는 유지돼요.')">일정</button>
+          <button class="ttab" onclick="toast('할 일: 시간 없이 등록해요.')">할 일</button>
+          <button class="ttab" onclick="toast('부재중: 자리 비움을 등록해요 — 이 시간은 조율에서 자동 제외돼요.')">부재중</button>
+          <button class="ttab" onclick="toast('바쁨: 방해 금지 블록 — 회피 선호 신호로 학습돼요.')">바쁨</button>
+          <button class="ttab" onclick="toast('외근: 장소 제약 신호로 학습돼요 — 지훈님의 수요일 제외가 이 데이터에서 나와요.')">외근</button>
+        </div>
+        <button class="modal-x" onclick="closeCreate()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+
+        <!-- 기본 티어 -->
+        <div class="formrow" style="margin-top:2px">
+          <span class="flab">제목</span>
+          <div class="fctrl"><input class="inp2" type="text" value="디자인 시스템 리뷰" placeholder="회의 제목"></div>
+        </div>
+        <div class="formrow">
+          <span class="flab">참석자 <b id="pcount" style="color:var(--blue-d)">6</b></span>
+          <div class="fctrl">
+            <input class="inp2" type="text" id="pinput" placeholder="이름이나 이메일로 검색"
+                   oninput="searchPeople()" onfocus="searchPeople()" autocomplete="off">
+            <div class="pdrop" id="pdrop"></div>
+            <div class="plist2" id="pchips"></div>
+          </div>
+        </div>
+        <div class="formrow">
+          <span class="flab" style="padding-top:9px">조건</span>
+          <div class="fctrl">
+            <div class="chips-row">
+              <button class="chip-sel" id="chip-dur" onclick="openCond('dur')">⏱ <b id="val-dur">1시간</b> 회의</button>
+              <button class="chip-sel" id="chip-per" onclick="openCond('per')">📅 <b id="val-per">이번 주</b><span id="suf-per"> 이내</span></button>
+              <button class="chip-sel" id="chip-ddl" onclick="openCond('ddl')">⏰ 마감 <b id="val-ddl">24시간</b></button>
+              <button class="chip-sel" id="chip-room" onclick="openCond('room')">🚪 미팅룸 <b id="val-room">자동</b></button>
+              <button class="chip-sel" id="chip-band" onclick="openCond('band')">🕒 시간대 <b id="val-band">무관</b></button>
+            </div>
+            <div class="cond-panel" id="condPanel" style="display:none"></div>
+          </div>
+        </div>
+
+
+
+        <div class="modal-foot" style="flex-direction:column;gap:8px">
+          <button class="btn pri" style="width:100%" onclick="go(2)">괜찮은 시간 찾기</button>
+          <span class="ai-grad fnote">✦ 시간을 고르지 않아요. 조건만 입력하면 시간은 시스템이 찾아요.</span>
+        </div>
+      </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 02 추천 — 같은 캘린더 위 후보 오버레이 ═══════ -->
+  <section class="screen wide" data-step="2">
+    <div class="calapp">
+      <aside class="sidebar">
+        <div class="make-wrap" id="mk2">
+          <button class="make-btn" onclick="toggleMake('mk2')"><span class="plus">＋</span><span class="lbl">만들기</span><span class="car">▼</span></button>
+          <div class="make-menu">
+            <button class="mm-hero" onclick="toggleMake('mk2');toast('킥오프 조율이 이미 진행 중이에요 — 발송으로 이어가요.')">새 회의<span class="mm-desc">조건만 넣으면 시간은 시스템이 찾아요</span></button>
+            <button onclick="toggleMake('mk2');toast('일반 일정은 기존 방식대로 시간을 직접 골라 등록해요.')">일정<span class="mm-desc">시간을 직접 지정해요</span></button>
+            <button onclick="toggleMake('mk2');toast('할 일은 시간 없이 등록돼요.')">할 일<span class="mm-desc">시간 없이 등록해요</span></button>
+            <button onclick="toggleMake('mk2');toast('부재중: 자리 비움 등록 — 이 시간은 조율에서 자동 제외돼요.')">부재중<span class="mm-desc">조율에서 자동 제외</span></button>
+            <button onclick="toggleMake('mk2');toast('바쁨: 방해 금지 블록 — 회피 선호 신호로 학습돼요.')">바쁨<span class="mm-desc">회피 신호로 학습</span></button>
+            <button onclick="toggleMake('mk2');toast('외근: 장소 제약 신호로 학습돼요 — 지훈님의 수요일 제외가 이 데이터에서 나와요.')">외근<span class="mm-desc">장소 제약 신호로 학습</span></button>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">2026년 7월</div>
+          <div class="mini">
+            <span class="mh" style="color:#d9605c">일</span><span class="mh">월</span><span class="mh">화</span><span class="mh">수</span><span class="mh">목</span><span class="mh">금</span><span class="mh" style="color:#5a8fd8">토</span>
+            <span class="md out">28</span><span class="md out">29</span><span class="md out">30</span><span class="md">1</span><span class="md">2</span><span class="md">3</span><span class="md">4</span>
+            <span class="md sel sel-s">5</span><span class="md sel today">6</span><span class="md sel">7</span><span class="md sel">8</span><span class="md sel">9</span><span class="md sel">10</span><span class="md sel sel-e">11</span>
+            <span class="md">12</span><span class="md">13</span><span class="md">14</span><span class="md">15</span><span class="md">16</span><span class="md">17</span><span class="md">18</span>
+            <span class="md">19</span><span class="md">20</span><span class="md">21</span><span class="md">22</span><span class="md">23</span><span class="md">24</span><span class="md">25</span>
+            <span class="md">26</span><span class="md">27</span><span class="md">28</span><span class="md">29</span><span class="md">30</span><span class="md">31</span><span class="md out">1</span>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">내 캘린더</div>
+          <div class="sb-check" data-cal="mine" onclick="toggleCal('mine')"><span class="cbx" style="background:#3182f6">✓</span>이가영</div>
+          <div class="sb-check" data-cal="team" onclick="toggleCal('team')"><span class="cbx" style="background:#9775fa">✓</span>디자인팀</div>
+          <div class="sb-title" style="margin-top:14px">회의실</div>
+          <div class="sb-check" data-cal="room1" onclick="toggleCal('room1')"><span class="cbx" style="background:#66a80f">✓</span>미팅룸 1</div>
+          <div class="sb-check" data-cal="room2" onclick="toggleCal('room2')"><span class="cbx" style="background:#2f9e44">✓</span>미팅룸 2</div>
+          <div class="sb-check" data-cal="room3" onclick="toggleCal('room3')"><span class="cbx" style="background:#0ca678">✓</span>미팅룸 3</div>
+          <div class="sb-check" data-cal="room4" onclick="toggleCal('room4')"><span class="cbx" style="background:#0c8599">✓</span>미팅룸 4</div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">진행 중인 조율</div>
+          <div class="sb-item" style="cursor:pointer" onclick="openRec()" title="후보 다시 열기"><span class="si-t">디자인 시스템 리뷰<span class="role host">주최</span><span class="st-pill ing">조율중</span></span><span class="si-s">후보 검토 중 · 참석자 6명</span></div>
+          <div class="sb-item" style="cursor:pointer" onclick="toast('데모에서는 이 조율의 화면은 준비되어 있지 않아요.')"><span class="si-t">마케팅 캠페인 싱크<span class="role guest">참석</span><span class="st-pill ing">조율중</span></span><span class="si-s">화 4:00 제안 받음 · 다른 의견 없으면 내일 확정</span></div>
+        </div>
+      </aside>
+
+    <div class="caloverlay">
+      <div class="calcard">
+        <div class="calhead">
+          <span class="month">2026년 7월</span>          <span class="calmsg">괜찮은 시간 3개를 찾았어요</span>
+          <button class="today" style="margin-left:auto" onclick="toast('오늘이 있는 주로 이동해요.')">오늘</button>
+          <button class="chev" onclick="toast('조율 기간(다음 주)을 벗어난 주는 후보 계산에 포함되지 않아요.')">‹</button>
+          <button class="chev" onclick="toast('조율 기간(다음 주)을 벗어난 주는 후보 계산에 포함되지 않아요.')">›</button>
+        </div>
+        <div class="calgrid">
+          <div class="cal-corner"></div>
+          <div class="dayhead"><div class="dw sun">일</div><div class="dn">5</div></div>
+          <div class="dayhead"><div class="dw today-w">월</div><div class="dn today">6</div></div>
+          <div class="dayhead"><div class="dw">화</div><div class="dn">7</div></div>
+          <div class="dayhead" style="opacity:.45"><div class="dw">수</div><div class="dn">8</div></div>
+          <div class="dayhead"><div class="dw">목</div><div class="dn">9</div></div>
+          <div class="dayhead"><div class="dw">금</div><div class="dn">10</div></div>
+          <div class="dayhead"><div class="dw sat">토</div><div class="dn">11</div></div>
+
+          <div class="timecol">
+            <span data-h="9">9시</span><span data-h="10">10시</span><span data-h="11">11시</span>
+            <span data-h="12">12시</span><span data-h="13">13시</span><span data-h="14">14시</span>
+            <span data-h="15">15시</span><span data-h="16">16시</span><span data-h="17">17시</span>
+          </div>
+          <div class="daycol wknd"><!-- 일 --></div>
+          <div class="daycol"><!-- 월 -->
+            <div class="evt dim th-1" data-s="10" data-e="11" data-cal="mine">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team dim th-2" data-s="10" data-e="11" data-cal="team">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 dim th-3" data-cal="room1" data-s="10" data-e="11">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt dim half-l" data-s="14" data-e="15.5" data-cal="mine">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt c-room2 dim half-r" data-cal="room2" data-s="14" data-e="15.5">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt dim" data-cal="mine" data-s="16" data-e="17">디자인 QA<div class="et">16:00 – 17:00</div></div>
+          </div>
+          <div class="daycol"><!-- 화 -->
+            <div class="evt dim" data-s="11" data-e="12" data-cal="mine">UT 준비<div class="et">11:00 – 12:00</div></div>
+            <div class="evt c-room2 dim" data-cal="room2" data-s="9.5" data-e="10.5">채용 인터뷰<div class="et">9:30 – 10:30 · 미팅룸 2</div></div>
+            <div class="evt dim" data-cal="mine" data-s="13" data-e="14">토큰 스펙 정리<div class="et">13:00 – 14:00</div></div>
+            <div class="evt c-room1 dim" data-cal="room1" data-s="14" data-e="15">스프린트 플래닝<div class="et">14:00 – 15:00 · 미팅룸 1</div></div>
+            <button class="cand-blk rank3" data-s="15" data-e="16" onclick="toast('데모에서는 1순위 발송 경로를 따라가요. 실제라면 어떤 후보든 선택해 발송할 수 있어요.')">3위 · 양보 필요<br><span class="cbscore">오후 3:00 – 4:00</span></button>
+          </div>
+          <div class="daycol excluded"><!-- 수 -->
+            <div class="exlabel">제외<br>지훈님 외근 패턴</div>
+            <div class="evt dim half-l" data-s="13" data-e="14" style="opacity:.5" data-cal="mine">디자인팀 회의<div class="et">13:00 – 14:00</div></div>
+            <div class="evt c-team dim half-r" data-s="13" data-e="14" style="opacity:.5" data-cal="team">디자인팀 회의<div class="et">13:00 – 14:00</div></div>
+            <div class="evt dim" data-cal="mine" data-s="10" data-e="11" style="opacity:.5">UT 세션 준비<div class="et">10:00 – 11:00</div></div>
+            <div class="evt c-room3 dim" data-cal="room3" data-s="15" data-e="16" style="opacity:.5">전사 발표 리허설<div class="et">15:00 – 16:00 · 미팅룸 3</div></div>
+          </div>
+          <div class="daycol"><!-- 목 -->
+            <div class="evt dim half-l" data-s="10" data-e="11" data-cal="mine">리드 1:1<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 dim half-r" data-cal="room1" data-s="10" data-e="11">리드 1:1<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt dim" data-cal="mine" data-s="16" data-e="17">PP 리뷰 B그룹<div class="et">16:00 – 17:00</div></div>
+            <button class="cand-blk rank1" id="blkBest" data-s="14" data-e="15" onclick="go(3)">추천 · 모두 좋음 &nbsp;오후 2:00 – 3:00<br><span class="cbscore">🚪 미팅룸 4 · 필수 4명 모두 좋음</span></button>
+          </div>
+          <div class="daycol"><!-- 금 -->
+            <button class="cand-blk rank2" data-s="11" data-e="12" onclick="toast('데모에서는 1순위 발송 경로를 따라가요.')">2위 · 괜찮음<br><span class="cbscore">오전 11:00 – 12:00</span></button>
+            <div class="evt dim" data-s="15" data-e="16" data-cal="mine">UT 참관<div class="et">15:00 – 16:00</div></div>
+            <div class="evt dim th-1" data-cal="mine" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team dim th-2" data-cal="team" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 dim th-3" data-cal="room1" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room4 dim" data-cal="room4" data-s="14" data-e="15">영업팀 데모<div class="et">14:00 – 15:00 · 미팅룸 4</div></div>
+          </div>
+          <div class="daycol wknd"><!-- 토 --></div>
+        </div>
+      </div>
+
+      <div class="panel float" id="recPanel">
+        <div style="display:flex;align-items:center;gap:2px">
+          <h2 style="flex:1">모두에게 괜찮은 시간이에요</h2>
+          <button class="modal-x" data-tip="조율 삭제하기" onclick="toast('삭제는 확인 후 폐기돼요 — 발송 전이라 아무에게도 알림이 가지 않아요. (데모에서는 삭제되지 않아요)')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg></button>
+          <button class="modal-x" data-tip="잠시 닫기 — '진행 중인 조율'에 남아요" onclick="closeRec()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+        <div class="sect" style="margin-top:16px">추천 순위</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px">
+          <button class="rankrow best" onclick="go(3)">
+            <span class="tierb t1">모두 좋음</span>
+            <div><div class="rw">목요일 오후 2:00 – 3:00</div>
+            <div class="rh">필수 4명 모두 여유<br>점심 직후 아님 (은주님 패턴) · 지훈님 외근일 아님<br>🚪 미팅룸 4</div></div>
+          </button>
+          <button class="rankrow" onclick="toast('데모에서는 1순위 발송 경로를 따라가요.')">
+            <span class="tierb t2">괜찮음</span>
+            <div><div class="rw">금요일 오전 11:00 – 12:00</div>
+            <div class="rh">필수 4명 가능<br>⚠ 인영님(선택) 일정 겹칠 수 있음<br>🚪 미팅룸 2</div></div>
+          </button>
+          <button class="rankrow" onclick="toast('데모에서는 1순위 발송 경로를 따라가요.')">
+            <span class="tierb t3">양보 필요</span>
+            <div><div class="rw">화요일 오후 3:00 – 4:00</div>
+            <div class="rh">전원 비어있음<br>⚠ 지은님 집중 작업 시간대<br>🚪 10인 룸만</div></div>
+          </button>
+        </div>
+        <div class="sect" style="margin-top:20px">제외된 시간</div>
+        <div class="defaults"><b>수요일 전체</b> — 지훈님 최근 8주 외근 패턴<br><b>오후 1시대</b> — 은주님 점심 직후 회의 3회 거절 이력</div>
+        <div class="modal-foot" style="flex-direction:column;gap:8px">
+          <button class="btn pri" style="width:100%" onclick="go(3)">목요일 오후 2:00로 발송하기</button>
+          <span class="fnote">🚪 발송 시 미팅룸 4 임시 홀드 · 다른 의견 없으면 24시간 뒤 자동 확정</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 03 수신 — 지훈의 캘린더 위 ═══════ -->
+  <section class="screen wide" data-step="3">
+    <div class="calapp">
+      <aside class="sidebar">
+        <div class="make-wrap" id="mk3">
+          <button class="make-btn" onclick="toggleMake('mk3')"><span class="plus">＋</span><span class="lbl">만들기</span><span class="car">▼</span></button>
+          <div class="make-menu">
+            <button class="mm-hero" onclick="toggleMake('mk3');toast('데모에서는 이가영 님의 생성 플로우(01)만 준비되어 있어요.')">새 회의<span class="mm-desc">조건만 넣으면 시간은 시스템이 찾아요</span></button>
+            <button onclick="toggleMake('mk3');toast('일반 일정은 기존 방식대로 시간을 직접 골라 등록해요.')">일정<span class="mm-desc">시간을 직접 지정해요</span></button>
+            <button onclick="toggleMake('mk3');toast('할 일은 시간 없이 등록돼요.')">할 일<span class="mm-desc">시간 없이 등록해요</span></button>
+            <button onclick="toggleMake('mk3');toast('부재중: 자리 비움 등록 — 이 시간은 조율에서 자동 제외돼요.')">부재중<span class="mm-desc">조율에서 자동 제외</span></button>
+            <button onclick="toggleMake('mk3');toast('바쁨: 방해 금지 블록 — 회피 신호로 학습돼요.')">바쁨<span class="mm-desc">회피 신호로 학습</span></button>
+            <button onclick="toggleMake('mk3');toast('외근: 장소 제약 신호로 학습돼요 — 수요일 제외가 이 데이터에서 나와요.')">외근<span class="mm-desc">장소 제약 신호로 학습</span></button>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">2026년 7월</div>
+          <div class="mini">
+            <span class="mh" style="color:#d9605c">일</span><span class="mh">월</span><span class="mh">화</span><span class="mh">수</span><span class="mh">목</span><span class="mh">금</span><span class="mh" style="color:#5a8fd8">토</span>
+            <span class="md out">28</span><span class="md out">29</span><span class="md out">30</span><span class="md">1</span><span class="md">2</span><span class="md">3</span><span class="md">4</span>
+            <span class="md sel sel-s">5</span><span class="md sel today">6</span><span class="md sel">7</span><span class="md sel">8</span><span class="md sel">9</span><span class="md sel">10</span><span class="md sel sel-e">11</span>
+            <span class="md">12</span><span class="md">13</span><span class="md">14</span><span class="md">15</span><span class="md">16</span><span class="md">17</span><span class="md">18</span>
+            <span class="md">19</span><span class="md">20</span><span class="md">21</span><span class="md">22</span><span class="md">23</span><span class="md">24</span><span class="md">25</span>
+            <span class="md">26</span><span class="md">27</span><span class="md">28</span><span class="md">29</span><span class="md">30</span><span class="md">31</span><span class="md out">1</span>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">내 캘린더</div>
+          <div class="sb-check" data-cal="mine" onclick="toggleCal('mine')"><span class="cbx" style="background:#f59f00">✓</span>정지훈</div>
+          <div class="sb-check" data-cal="team" onclick="toggleCal('team')"><span class="cbx" style="background:#9775fa">✓</span>디자인팀</div>
+          <div class="sb-title" style="margin-top:14px">회의실</div>
+          <div class="sb-check" data-cal="room1" onclick="toggleCal('room1')"><span class="cbx" style="background:#66a80f">✓</span>미팅룸 1</div>
+          <div class="sb-check" data-cal="room2" onclick="toggleCal('room2')"><span class="cbx" style="background:#2f9e44">✓</span>미팅룸 2</div>
+          <div class="sb-check" data-cal="room3" onclick="toggleCal('room3')"><span class="cbx" style="background:#0ca678">✓</span>미팅룸 3</div>
+          <div class="sb-check" data-cal="room4" onclick="toggleCal('room4')"><span class="cbx" style="background:#0c8599">✓</span>미팅룸 4</div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">진행 중인 조율</div>
+          <div class="sb-item" style="cursor:pointer" onclick="openInv()"><span class="si-t">디자인 시스템 리뷰<span class="role guest">참석</span><span class="st-pill ing">조율중</span></span><span class="si-s">목 2:00 제안 받음 · 무응답 시 내일 확정</span></div>
+        </div>
+      </aside>
+
+    <div class="caloverlay">
+      <div class="calcard">
+        <div class="calhead">
+          <span class="month">2026년 7월</span>
+          <span class="calmsg">회의 시간 제안이 도착했어요</span>
+          <button class="today" style="margin-left:auto" onclick="toast('오늘이 있는 주로 이동해요.')">오늘</button>
+          <button class="chev" onclick="toast('이전 주로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">‹</button>
+          <button class="chev" onclick="toast('다음 주로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">›</button>
+        </div>
+        <div class="calgrid">
+          <div class="cal-corner"></div>
+          <div class="dayhead"><div class="dw sun">일</div><div class="dn">5</div></div>
+          <div class="dayhead"><div class="dw today-w">월</div><div class="dn today">6</div></div>
+          <div class="dayhead"><div class="dw">화</div><div class="dn">7</div></div>
+          <div class="dayhead"><div class="dw">수</div><div class="dn">8</div></div>
+          <div class="dayhead"><div class="dw">목</div><div class="dn">9</div></div>
+          <div class="dayhead"><div class="dw">금</div><div class="dn">10</div></div>
+          <div class="dayhead"><div class="dw sat">토</div><div class="dn">11</div></div>
+
+          <div class="timecol">
+            <span data-h="9">9시</span><span data-h="10">10시</span><span data-h="11">11시</span>
+            <span data-h="12">12시</span><span data-h="13">13시</span><span data-h="14">14시</span>
+            <span data-h="15">15시</span><span data-h="16">16시</span><span data-h="17">17시</span>
+          </div>
+          <div class="daycol wknd"><!-- 일 --></div>
+          <div class="daycol"><!-- 월 -->
+            <div class="evt c-jh th-1" data-s="10" data-e="11" data-cal="mine">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-s="10" data-e="11" data-cal="team">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-jh half-l" data-s="14" data-e="15.5" data-cal="mine">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt c-room2 half-r" data-cal="room2" data-s="14" data-e="15.5">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+          </div>
+          <div class="daycol"><!-- 화 -->
+            <div class="evt c-room2" data-cal="room2" data-s="9.5" data-e="10.5">채용 인터뷰<div class="et">9:30 – 10:30 · 미팅룸 2</div></div>
+            <div class="evt c-jh" data-s="11" data-e="12" data-cal="mine">고객사 미팅 준비<div class="et">11:00 – 12:00</div></div>
+            <div class="evt c-room1" data-cal="room1" data-s="14" data-e="15">스프린트 플래닝<div class="et">14:00 – 15:00 · 미팅룸 1</div></div>
+          </div>
+          <div class="daycol"><!-- 수 -->
+            <div class="evt c-jh" data-cal="mine" data-s="9.5" data-e="17">외근 — 고객사 방문<div class="et">9:30 – 17:00</div></div>
+          </div>
+          <div class="daycol"><!-- 목 -->
+            <div class="evt c-jh" data-s="10" data-e="11" data-cal="mine">프론트 싱크<div class="et">10:00 – 11:00</div></div>
+            <button class="evt c-jh half-l" id="blkProp" data-cal="mine" data-s="14" data-e="15" style="border:1px solid var(--red)" onclick="openInv()">디자인 시스템 리뷰<div class="et">14:00 – 15:00 · 미팅룸 4</div></button>
+            <div class="evt c-jh half-r" data-cal="mine" data-s="14" data-e="15.5">파트너사 연동 미팅<div class="et">14:00 – 15:30</div></div>
+          </div>
+          <div class="daycol"><!-- 금 -->
+            <div class="evt c-jh th-1" data-cal="mine" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-cal="team" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room4" data-cal="room4" data-s="14" data-e="15">영업팀 데모<div class="et">14:00 – 15:00 · 미팅룸 4</div></div>
+          </div>
+          <div class="daycol wknd"><!-- 토 --></div>
+        </div>
+      </div>
+
+      <div class="panel float" id="invPanel">
+        <div style="display:flex;justify-content:flex-end;gap:2px;margin:-8px -10px 2px 0">
+          <button class="modal-x" data-tip="삭제" onclick="toast('내 캘린더에서 이 일정을 숨겨요 — 조율 자체는 주최자만 삭제할 수 있어요. (데모)')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg></button>
+          <button class="modal-x" data-tip="더보기" onclick="toast('더보기: 복제 · 스팸 신고 · 알림 설정 (데모)')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg></button>
+          <button class="modal-x" data-tip="닫기 — 사이드바나 캘린더 블록에서 다시 열 수 있어요" onclick="closeInv()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="width:20px;display:flex;justify-content:center;flex-shrink:0;padding-top:6px"><span style="width:14px;height:14px;border-radius:4px;background:var(--blue);display:block"></span></span>
+          <div style="flex:1">
+            <h2 style="font-size:18px">디자인 시스템 리뷰</h2>
+            <div style="font-size:14px;color:var(--g600);margin-top:2px">7월 9일 (목) · 오후 2:00 – 3:00</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--red);background:var(--red-bg);border-radius:9px;padding:9px 12px;margin-top:14px;font-weight:700">⚠ "파트너사 연동 미팅"과 겹쳐요</div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:2px">
+          <div class="drow"><span class="di">🚪</span><span>미팅룸 4 <span style="color:var(--g400)">· 확정되면 자동 예약</span></span></div>
+          <div class="drow"><span class="di">💻</span><span><a href="#" onclick="event.preventDefault();toast('확정되면 화상 링크가 활성화돼요 — 온라인 참석자(최인영님)의 초대에 자동 포함돼요.')" style="color:var(--blue-d);font-weight:600;text-decoration:none">meet.acmeworks.io/dsr-0709</a></span></div>
+          <div class="drow"><span class="di">✉️</span><span>주최 이가영</span></div>
+          <div class="drow"><span class="di">👥</span><span>참석자 6명</span><a href="#" onclick="event.preventDefault();showInvLog()" style="margin-left:auto;font-size:12px;color:var(--blue-d);font-weight:600;text-decoration:none">응답 로그 보기</a></div>
+          <div id="attList" style="padding-left:30px">
+            <div class="att-r"><span class="avw"><img src="img/p1.jpg"><i class="ok"></i></span>이가영 <span>주최 · 필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p2.jpg"><i class="ok"></i></span>윤지은 <span>필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p3.jpg"><i class="na"></i></span>박은주 <span>필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p4.jpg"><i class="na"></i></span>정지훈 <span>필수 · 나</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p5.jpg"><i class="na"></i></span>최인영 <span>선택 · 온라인</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p6.jpg"><i class="na"></i></span>김민수 <span>선택</span></div>
+          </div>
+          
+          <div class="drow"><span class="di">🔔</span><span>10분 전 알림</span></div>
+        </div>
+        <div class="modal-foot" style="flex-direction:column;gap:8px">
+          <div style="display:flex;gap:8px;width:100%">
+            <button class="btn pri" style="flex:1" onclick="toast('실제라면 이걸로 끝 — 응답조차 필수가 아니에요. 데모에서는 변경 요청 경로를 따라가 볼게요.')">좋아요</button>
+            <button class="btn ghost" style="flex:1" onclick="matchPanelHeight('invPanel','objPanel');go(4)">이 시간은 어려워요</button>
+          </div>
+          <span class="fnote">⏰ 내일 오후 2시까지 다른 의견이 없으면 이대로 확정돼요</span>
+        </div>
+      </div>
+
+      <div class="panel float flexcol" id="invLogPanel" style="display:none">
+        <div style="display:flex;align-items:center;gap:2px">
+          <button class="modal-x" style="margin-left:-8px" data-tip="뒤로 — 회의 정보로 돌아가요" onclick="openInv()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></button>
+          <h2 style="flex:1;margin-left:4px">응답 로그</h2>
+          <button class="modal-x" data-tip="닫기" onclick="closeInv()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+        <div class="tl" style="margin-top:14px">
+          <div class="tli"><span class="dot b"></span><div><div class="tt"><b>목 2:00 제안 발송</b> — 6명에게 · 미팅룸 4 임시 홀드</div><div class="tm">오늘 오후 2:04</div></div></div>
+          <div class="tli"><span class="dot g"></span><div><div class="tt"><b>윤지은 님 좋아요</b></div><div class="tm">오늘 오후 2:31</div></div></div>
+        </div>
+        <div class="modal-foot" style="flex-direction:column;gap:8px">
+          <span class="ai-grad fnote">✦ 조율의 모든 발걸음이 여기 남아요</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 04 이의 — 같은 자리, 패널만 전환 ═══════ -->
+  <section class="screen wide" data-step="4">
+    <div class="calapp">
+      <aside class="sidebar">
+        <div class="make-wrap" id="mk4">
+          <button class="make-btn" onclick="toggleMake('mk4')"><span class="plus">＋</span><span class="lbl">만들기</span><span class="car">▼</span></button>
+          <div class="make-menu">
+            <button class="mm-hero" onclick="toggleMake('mk4');toast('데모에서는 이가영 님의 생성 플로우(01)만 준비되어 있어요.')">새 회의<span class="mm-desc">조건만 넣으면 시간은 시스템이 찾아요</span></button>
+            <button onclick="toggleMake('mk4');toast('일반 일정은 기존 방식대로 시간을 직접 골라 등록해요.')">일정<span class="mm-desc">시간을 직접 지정해요</span></button>
+            <button onclick="toggleMake('mk4');toast('할 일은 시간 없이 등록돼요.')">할 일<span class="mm-desc">시간 없이 등록해요</span></button>
+            <button onclick="toggleMake('mk4');toast('부재중: 자리 비움 등록 — 이 시간은 조율에서 자동 제외돼요.')">부재중<span class="mm-desc">조율에서 자동 제외</span></button>
+            <button onclick="toggleMake('mk4');toast('바쁨: 방해 금지 블록 — 회피 신호로 학습돼요.')">바쁨<span class="mm-desc">회피 신호로 학습</span></button>
+            <button onclick="toggleMake('mk4');toast('외근: 장소 제약 신호로 학습돼요 — 수요일 제외가 이 데이터에서 나와요.')">외근<span class="mm-desc">장소 제약 신호로 학습</span></button>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">2026년 7월</div>
+          <div class="mini">
+            <span class="mh" style="color:#d9605c">일</span><span class="mh">월</span><span class="mh">화</span><span class="mh">수</span><span class="mh">목</span><span class="mh">금</span><span class="mh" style="color:#5a8fd8">토</span>
+            <span class="md out">28</span><span class="md out">29</span><span class="md out">30</span><span class="md">1</span><span class="md">2</span><span class="md">3</span><span class="md">4</span>
+            <span class="md sel sel-s">5</span><span class="md sel today">6</span><span class="md sel">7</span><span class="md sel">8</span><span class="md sel">9</span><span class="md sel">10</span><span class="md sel sel-e">11</span>
+            <span class="md">12</span><span class="md">13</span><span class="md">14</span><span class="md">15</span><span class="md">16</span><span class="md">17</span><span class="md">18</span>
+            <span class="md">19</span><span class="md">20</span><span class="md">21</span><span class="md">22</span><span class="md">23</span><span class="md">24</span><span class="md">25</span>
+            <span class="md">26</span><span class="md">27</span><span class="md">28</span><span class="md">29</span><span class="md">30</span><span class="md">31</span><span class="md out">1</span>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">내 캘린더</div>
+          <div class="sb-check" data-cal="mine" onclick="toggleCal('mine')"><span class="cbx" style="background:#f59f00">✓</span>정지훈</div>
+          <div class="sb-check" data-cal="team" onclick="toggleCal('team')"><span class="cbx" style="background:#9775fa">✓</span>디자인팀</div>
+          <div class="sb-title" style="margin-top:14px">회의실</div>
+          <div class="sb-check" data-cal="room1" onclick="toggleCal('room1')"><span class="cbx" style="background:#66a80f">✓</span>미팅룸 1</div>
+          <div class="sb-check" data-cal="room2" onclick="toggleCal('room2')"><span class="cbx" style="background:#2f9e44">✓</span>미팅룸 2</div>
+          <div class="sb-check" data-cal="room3" onclick="toggleCal('room3')"><span class="cbx" style="background:#0ca678">✓</span>미팅룸 3</div>
+          <div class="sb-check" data-cal="room4" onclick="toggleCal('room4')"><span class="cbx" style="background:#0c8599">✓</span>미팅룸 4</div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">진행 중인 조율</div>
+          <div class="sb-item" style="cursor:pointer" onclick="openObj()"><span class="si-t">디자인 시스템 리뷰<span class="role guest">참석</span><span class="st-pill ing">조율중</span></span><span class="si-s">목 2:00 제안 받음 · 무응답 시 내일 확정</span></div>
+        </div>
+      </aside>
+
+    <div class="caloverlay">
+      <div class="calcard">
+        <div class="calhead">
+          <span class="month">2026년 7월</span>
+          <span class="calmsg">회의 시간 제안이 도착했어요</span>
+          <button class="today" style="margin-left:auto" onclick="toast('오늘이 있는 주로 이동해요.')">오늘</button>
+          <button class="chev" onclick="toast('이전 주로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">‹</button>
+          <button class="chev" onclick="toast('다음 주로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">›</button>
+        </div>
+        <div class="calgrid">
+          <div class="cal-corner"></div>
+          <div class="dayhead"><div class="dw sun">일</div><div class="dn">5</div></div>
+          <div class="dayhead"><div class="dw today-w">월</div><div class="dn today">6</div></div>
+          <div class="dayhead"><div class="dw">화</div><div class="dn">7</div></div>
+          <div class="dayhead"><div class="dw">수</div><div class="dn">8</div></div>
+          <div class="dayhead"><div class="dw">목</div><div class="dn">9</div></div>
+          <div class="dayhead"><div class="dw">금</div><div class="dn">10</div></div>
+          <div class="dayhead"><div class="dw sat">토</div><div class="dn">11</div></div>
+
+          <div class="timecol">
+            <span data-h="9">9시</span><span data-h="10">10시</span><span data-h="11">11시</span>
+            <span data-h="12">12시</span><span data-h="13">13시</span><span data-h="14">14시</span>
+            <span data-h="15">15시</span><span data-h="16">16시</span><span data-h="17">17시</span>
+          </div>
+          <div class="daycol wknd"><!-- 일 --></div>
+          <div class="daycol"><!-- 월 -->
+            <div class="evt c-jh th-1" data-s="10" data-e="11" data-cal="mine">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-s="10" data-e="11" data-cal="team">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-jh half-l" data-s="14" data-e="15.5" data-cal="mine">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt c-room2 half-r" data-cal="room2" data-s="14" data-e="15.5">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+          </div>
+          <div class="daycol"><!-- 화 -->
+            <div class="evt c-room2" data-cal="room2" data-s="9.5" data-e="10.5">채용 인터뷰<div class="et">9:30 – 10:30 · 미팅룸 2</div></div>
+            <div class="evt c-jh" data-s="11" data-e="12" data-cal="mine">고객사 미팅 준비<div class="et">11:00 – 12:00</div></div>
+            <div class="evt c-room1" data-cal="room1" data-s="14" data-e="15">스프린트 플래닝<div class="et">14:00 – 15:00 · 미팅룸 1</div></div>
+          </div>
+          <div class="daycol"><!-- 수 -->
+            <div class="evt c-jh" data-cal="mine" data-s="9.5" data-e="17">외근 — 고객사 방문<div class="et">9:30 – 17:00</div></div>
+          </div>
+          <div class="daycol"><!-- 목 -->
+            <div class="evt c-jh" data-s="10" data-e="11" data-cal="mine">프론트 싱크<div class="et">10:00 – 11:00</div></div>
+            <button class="evt c-jh half-l" id="blkProp4" data-cal="mine" data-s="14" data-e="15" style="border:1px solid var(--red)" onclick="openObj()">디자인 시스템 리뷰<div class="et">14:00 – 15:00 · 미팅룸 4</div></button>
+            <div class="evt c-jh half-r" data-cal="mine" data-s="14" data-e="15.5">파트너사 연동 미팅<div class="et">14:00 – 15:30</div></div>
+          </div>
+          <div class="daycol"><!-- 금 -->
+            <div class="evt c-jh th-1" data-cal="mine" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-cal="team" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room4" data-cal="room4" data-s="14" data-e="15">영업팀 데모<div class="et">14:00 – 15:00 · 미팅룸 4</div></div>
+          </div>
+          <div class="daycol wknd"><!-- 토 --></div>
+        </div>
+      </div>
+
+      <div class="panel float flexcol" id="objPanel">
+        <div style="display:flex;align-items:center;gap:2px">
+          <button class="modal-x" style="margin-left:-8px" data-tip="뒤로 — 회의 정보로 돌아가요" onclick="go(3)"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></button>
+          <h2 style="flex:1;margin-left:4px">이 시간은 어려워요</h2>
+          <button class="modal-x" data-tip="닫기 — 사이드바나 캘린더 블록에서 다시 열 수 있어요" onclick="closeObj()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+
+        <div class="sect" style="margin-top:20px"><span class="tier-label"><span class="tn">1</span>시간은 그대로, 방식만 바꾸기</span></div>
+        <button class="opt" id="altOn" onclick="toggleOnline()">
+          <span class="cb">✓</span>
+          <div><div class="ow">💻 이 시간, 온라인이면 참석할 수 있어요</div>
+          <div class="oh">⚠ 주최자가 오프라인 참석을 요청했어요</div></div>
+        </button>
+
+        <div class="sect" style="margin-top:20px"><span class="tier-label"><span class="tn">2</span>가능한 시간 고르기 <span style="font-size:10px;font-weight:500;color:var(--g400)">위 방식과 함께 복수 선택 가능</span></span></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="opt" id="alt0" onclick="toggleAlt(0)">
+            <span class="cb">✓</span>
+            <div><div class="ow">금요일 오전 11:00 – 12:00</div><div class="oh">필수 참석자 모두 가능 · 미팅룸 2 예약 가능</div></div>
+          </button>
+          <button class="opt" id="alt1" onclick="toggleAlt(1)">
+            <span class="cb">✓</span>
+            <div><div class="ow">화요일 오후 3:00 – 4:00</div><div class="oh">전원 캘린더 비어있음 · 10인 룸만 가능</div></div>
+          </button>
+        </div>
+
+        <div class="modal-foot" style="flex-direction:column;gap:8px">
+          <div style="display:flex;gap:8px;width:100%">
+            <button class="btn pri" style="flex:1;width:auto" id="altSubmit" onclick="go(5)" disabled>이 시간들은 가능해요</button>
+            <button class="btn danger" style="flex:1;width:auto" onclick="go(7)">가능한 시간이 없어요</button>
+          </div>
+          <span class="ai-grad fnote">✦ 어려움만 알려주세요 — 다시 조율하는 건 시스템의 일이에요</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 05 조율 현황 — 가영의 캘린더 위 ═══════ -->
+  <section class="screen wide" data-step="5">
+    <div class="calapp">
+      <aside class="sidebar">
+        <div class="make-wrap" id="mk5">
+          <button class="make-btn" onclick="toggleMake('mk5')"><span class="plus">＋</span><span class="lbl">만들기</span><span class="car">▼</span></button>
+          <div class="make-menu">
+            <button class="mm-hero" onclick="toggleMake('mk5');toast('킥오프 조율이 이미 진행 중이에요 — 발송으로 이어가요.')">새 회의<span class="mm-desc">조건만 넣으면 시간은 시스템이 찾아요</span></button>
+            <button onclick="toggleMake('mk5');toast('일반 일정은 기존 방식대로 시간을 직접 골라 등록해요.')">일정<span class="mm-desc">시간을 직접 지정해요</span></button>
+            <button onclick="toggleMake('mk5');toast('할 일은 시간 없이 등록돼요.')">할 일<span class="mm-desc">시간 없이 등록해요</span></button>
+            <button onclick="toggleMake('mk5');toast('부재중: 자리 비움 등록 — 이 시간은 조율에서 자동 제외돼요.')">부재중<span class="mm-desc">조율에서 자동 제외</span></button>
+            <button onclick="toggleMake('mk5');toast('바쁨: 방해 금지 블록 — 회피 선호 신호로 학습돼요.')">바쁨<span class="mm-desc">회피 신호로 학습</span></button>
+            <button onclick="toggleMake('mk5');toast('외근: 장소 제약 신호로 학습돼요 — 지훈님의 수요일 제외가 이 데이터에서 나와요.')">외근<span class="mm-desc">장소 제약 신호로 학습</span></button>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">2026년 7월</div>
+          <div class="mini">
+            <span class="mh" style="color:#d9605c">일</span><span class="mh">월</span><span class="mh">화</span><span class="mh">수</span><span class="mh">목</span><span class="mh">금</span><span class="mh" style="color:#5a8fd8">토</span>
+            <span class="md out">28</span><span class="md out">29</span><span class="md out">30</span><span class="md">1</span><span class="md">2</span><span class="md">3</span><span class="md">4</span>
+            <span class="md sel sel-s">5</span><span class="md sel today">6</span><span class="md sel">7</span><span class="md sel">8</span><span class="md sel">9</span><span class="md sel">10</span><span class="md sel sel-e">11</span>
+            <span class="md">12</span><span class="md">13</span><span class="md">14</span><span class="md">15</span><span class="md">16</span><span class="md">17</span><span class="md">18</span>
+            <span class="md">19</span><span class="md">20</span><span class="md">21</span><span class="md">22</span><span class="md">23</span><span class="md">24</span><span class="md">25</span>
+            <span class="md">26</span><span class="md">27</span><span class="md">28</span><span class="md">29</span><span class="md">30</span><span class="md">31</span><span class="md out">1</span>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">내 캘린더</div>
+          <div class="sb-check" data-cal="mine" onclick="toggleCal('mine')"><span class="cbx" style="background:#3182f6">✓</span>이가영</div>
+          <div class="sb-check" data-cal="team" onclick="toggleCal('team')"><span class="cbx" style="background:#9775fa">✓</span>디자인팀</div>
+          <div class="sb-title" style="margin-top:14px">회의실</div>
+          <div class="sb-check" data-cal="room1" onclick="toggleCal('room1')"><span class="cbx" style="background:#66a80f">✓</span>미팅룸 1</div>
+          <div class="sb-check" data-cal="room2" onclick="toggleCal('room2')"><span class="cbx" style="background:#2f9e44">✓</span>미팅룸 2</div>
+          <div class="sb-check" data-cal="room3" onclick="toggleCal('room3')"><span class="cbx" style="background:#0ca678">✓</span>미팅룸 3</div>
+          <div class="sb-check" data-cal="room4" onclick="toggleCal('room4')"><span class="cbx" style="background:#0c8599">✓</span>미팅룸 4</div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">진행 중인 조율</div>
+          <div class="sb-item" style="cursor:pointer" onclick="openSta()" title="조율 현황 열기"><span class="si-t">디자인 시스템 리뷰<span class="role host">주최</span><span class="st-pill ing">재조율중</span></span><span class="si-s">금 11:00 재제안 · 다른 의견 없으면 내일 확정</span></div>
+          <div class="sb-item" style="cursor:pointer" onclick="toast('데모에서는 이 조율의 화면은 준비되어 있지 않아요.')"><span class="si-t">마케팅 캠페인 싱크<span class="role guest">참석</span><span class="st-pill ing">조율중</span></span><span class="si-s">화 4:00 제안 받음 · 다른 의견 없으면 내일 확정</span></div>
+        </div>
+      </aside>
+
+    <div class="caloverlay">
+      <div class="calcard">
+        <div class="calhead">
+          <span class="month">2026년 7월</span>
+          <span class="calmsg" style="color:var(--amber);border-color:#f2e4bd;background:var(--amber-bg)">변경 요청이 있어 자동으로 다시 조율했어요</span>
+          <button class="today" style="margin-left:auto" onclick="toast('오늘이 있는 주로 이동해요.')">오늘</button>
+          <button class="chev" onclick="toast('이전 주로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">‹</button>
+          <button class="chev" onclick="toast('다음 주로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">›</button>
+        </div>
+        <div class="calgrid">
+          <div class="cal-corner"></div>
+          <div class="dayhead"><div class="dw sun">일</div><div class="dn">5</div></div>
+          <div class="dayhead"><div class="dw today-w">월</div><div class="dn today">6</div></div>
+          <div class="dayhead"><div class="dw">화</div><div class="dn">7</div></div>
+          <div class="dayhead"><div class="dw">수</div><div class="dn">8</div></div>
+          <div class="dayhead"><div class="dw">목</div><div class="dn">9</div></div>
+          <div class="dayhead"><div class="dw">금</div><div class="dn">10</div></div>
+          <div class="dayhead"><div class="dw sat">토</div><div class="dn">11</div></div>
+
+          <div class="timecol">
+            <span data-h="9">9시</span><span data-h="10">10시</span><span data-h="11">11시</span>
+            <span data-h="12">12시</span><span data-h="13">13시</span><span data-h="14">14시</span>
+            <span data-h="15">15시</span><span data-h="16">16시</span><span data-h="17">17시</span>
+          </div>
+          <div class="daycol wknd"><!-- 일 --></div>
+          <div class="daycol"><!-- 월 -->
+            <div class="evt th-1" data-s="10" data-e="11" data-cal="mine">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-s="10" data-e="11" data-cal="team">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt half-l" data-s="14" data-e="15.5" data-cal="mine">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt c-room2 half-r" data-cal="room2" data-s="14" data-e="15.5">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt" data-cal="mine" data-s="16" data-e="17">디자인 QA<div class="et">16:00 – 17:00</div></div>
+          </div>
+          <div class="daycol"><!-- 화 -->
+            <div class="evt" data-s="11" data-e="12" data-cal="mine">UT 준비<div class="et">11:00 – 12:00</div></div>
+            <div class="evt c-room2" data-cal="room2" data-s="9.5" data-e="10.5">채용 인터뷰<div class="et">9:30 – 10:30 · 미팅룸 2</div></div>
+            <div class="evt" data-cal="mine" data-s="13" data-e="14">토큰 스펙 정리<div class="et">13:00 – 14:00</div></div>
+            <div class="evt c-room1" data-cal="room1" data-s="14" data-e="15">스프린트 플래닝<div class="et">14:00 – 15:00 · 미팅룸 1</div></div>
+          </div>
+          <div class="daycol"><!-- 수 -->
+            <div class="evt half-l" data-s="13" data-e="14" data-cal="mine">디자인팀 회의<div class="et">13:00 – 14:00</div></div>
+            <div class="evt c-team half-r" data-s="13" data-e="14" data-cal="team">디자인팀 회의<div class="et">13:00 – 14:00</div></div>
+            <div class="evt" data-cal="mine" data-s="10" data-e="11">UT 세션 준비<div class="et">10:00 – 11:00</div></div>
+            <div class="evt c-room3" data-cal="room3" data-s="15" data-e="16">전사 발표 리허설<div class="et">15:00 – 16:00 · 미팅룸 3</div></div>
+          </div>
+          <div class="daycol"><!-- 목 -->
+            <div class="evt half-l" data-s="10" data-e="11" data-cal="mine">리드 1:1<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 half-r" data-cal="room1" data-s="10" data-e="11">리드 1:1<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt" data-cal="mine" data-s="16" data-e="17">PP 리뷰 B그룹<div class="et">16:00 – 17:00</div></div>
+            <div class="evt cxl" data-s="14" data-e="15"><span style="text-decoration:line-through">디자인 시스템 리뷰</span><div class="et">금 11:00로 이동됨</div></div>
+          </div>
+          <div class="daycol"><!-- 금 -->
+            <div class="evt" data-s="15" data-e="16" data-cal="mine">UT 참관<div class="et">15:00 – 16:00</div></div>
+            <div class="evt th-1" data-cal="mine" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-cal="team" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <button class="evt" id="blkRe" data-cal="mine" data-s="11" data-e="12" style="border:1px solid var(--amber)" onclick="openSta()">⚠ 디자인 시스템 리뷰<div class="et">11:00 – 12:00 · 미팅룸 2</div></button>
+            <div class="evt c-room4" data-cal="room4" data-s="14" data-e="15">영업팀 데모<div class="et">14:00 – 15:00 · 미팅룸 4</div></div>
+          </div>
+          <div class="daycol wknd"><!-- 토 --></div>
+        </div>
+      </div>
+
+      <div class="panel float" id="staPanel">
+        <div style="display:flex;justify-content:flex-end;gap:2px;margin:-8px -10px 2px 0">
+          <button class="modal-x" data-tip="조율 삭제하기" onclick="toast('삭제는 확인 후 폐기돼요 — 참석자 전원에게 취소 알림이 가고 미팅룸 홀드도 해제돼요. (데모)')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg></button>
+          <button class="modal-x" data-tip="더보기" onclick="toast('더보기: 복제 · 마감 연장 · 알림 설정 (데모)')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg></button>
+          <button class="modal-x" data-tip="닫기 — 사이드바나 캘린더 블록에서 다시 열 수 있어요" onclick="closeSta()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="width:20px;display:flex;justify-content:center;flex-shrink:0;padding-top:6px"><span style="width:14px;height:14px;border-radius:4px;background:var(--blue);display:block"></span></span>
+          <div style="flex:1">
+            <h2 style="font-size:18px">디자인 시스템 리뷰</h2>
+            <div style="font-size:14px;color:var(--g600);margin-top:2px">7월 10일 (금) · 오전 11:00 – 12:00</div>
+          </div>
+        </div>
+        <div class="banner-log" data-tip="응답 로그 확인하기" onclick="showLog()" style="font-size:12px;color:var(--amber);background:var(--amber-bg);border-radius:9px;padding:9px 12px;margin-top:14px;cursor:pointer">
+          ⚠ 정지훈님의 요청으로 <b>목 2:00 → 금 11:00</b> 자동 재조율됐어요
+        </div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:2px">
+          <div class="drow"><span class="di">🚪</span><span>미팅룸 2 <span style="color:var(--g400)">· 미팅룸 4 홀드는 자동 해제됐어요</span></span></div>
+          <div class="drow"><span class="di">💻</span><span><a href="#" onclick="event.preventDefault();toast('확정되면 화상 링크가 활성화돼요 — 온라인 참석자의 초대에 자동 포함돼요.')" style="color:var(--blue-d);font-weight:600;text-decoration:none">meet.acmeworks.io/dsr-0710</a></span></div>
+          <div class="drow"><span class="di">🔔</span><span>10분 전 알림</span></div>
+          <div class="drow"><span class="di">👥</span><span>참석자 6명</span><a href="#" onclick="event.preventDefault();showLog()" style="margin-left:auto;font-size:12px;color:var(--blue-d);font-weight:600;text-decoration:none">응답 로그 보기</a></div>
+          <div id="staAtt" style="padding-left:30px">
+            <div class="att-r"><span class="avw"><img src="img/p1.jpg"><i class="ok"></i></span>이가영 <span>주최 · 필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p2.jpg"><i class="ok"></i></span>윤지은 <span>필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p3.jpg"><i class="na"></i></span>박은주 <span>필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p4.jpg"><i class="alt"></i></span>정지훈 <span>필수</span><span class="ast a">↻ 대안 제안 — "금 11시, 화 3시 가능"</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p5.jpg"><i class="na"></i></span>최인영 <span>선택 · 온라인</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p6.jpg"><i class="no"></i></span>김민수 <span>선택</span></div>
+          </div>
+        </div>
+        <div class="modal-foot" style="flex-direction:column;gap:8px">
+          <button class="btn pri" style="width:100%" onclick="go(6)">마감 시각으로 건너뛰기 →</button>
+          <span class="fnote">⏰ 내일 오전 11시까지 다른 의견이 없으면 이대로 확정돼요</span>
+        </div>
+      </div>
+
+      <div class="panel float flexcol" id="logPanel" style="display:none">
+        <div style="display:flex;align-items:center;gap:2px">
+          <button class="modal-x" style="margin-left:-8px" data-tip="뒤로 — 회의 정보로 돌아가요" onclick="backLog()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></button>
+          <h2 style="flex:1;margin-left:4px">응답 로그</h2>
+          <button class="modal-x" data-tip="닫기" onclick="closeSta()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+        <div class="tl" style="margin-top:14px">
+          <div class="tli"><span class="dot b"></span><div><div class="tt"><b>목 2:00 제안 발송</b> — 6명에게 · 미팅룸 4 임시 홀드</div><div class="tm">오늘 오후 2:04</div></div></div>
+          <div class="tli"><span class="dot g"></span><div><div class="tt"><b>윤지은 님 좋아요</b></div><div class="tm">오늘 오후 2:31</div></div></div>
+          <div class="tli"><span class="dot r"></span><div><div class="tt"><b>정지훈 님(필수) 변경 요청</b> — "금 11시, 화 3시 가능"</div><div class="tm">오늘 오후 3:12</div></div></div>
+          <div class="tli"><span class="dot b"></span><div><div class="tt"><b>재계산 → 금 11:00 재제안 발송</b><span class="autotag">자동</span><br>지훈님 제약 반영, 남은 후보 중 최적 · 전원에게 변경 알림</div><div class="tm">오늘 오후 3:12</div></div></div>
+          <div class="tli"><span class="dot b"></span><div><div class="tt"><b>미팅룸 홀드 교체</b><span class="autotag">자동</span> — 미팅룸 4 해제 → 미팅룸 2 홀드</div><div class="tm">오늘 오후 3:12</div></div></div>
+          <div class="tli"><span class="dot g"></span><div><div class="tt"><b>마감 12시간 전 리마인드</b><span class="autotag">자동 예정</span> — 무응답 2명에게만</div><div class="tm">내일 오후 11:00</div></div></div>
+        </div>
+        <div class="modal-foot" style="flex-direction:column;gap:8px">
+          <span class="ai-grad fnote">✦ 재협상이 슬랙이 아니라 여기서, 자동으로 돌아요</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 06 확정 — 조용한 상태 전이 ═══════ -->
+  <section class="screen wide" data-step="6">
+    <div class="calapp">
+      <aside class="sidebar">
+        <div class="make-wrap" id="mk6">
+          <button class="make-btn" onclick="toggleMake('mk6')"><span class="plus">＋</span><span class="lbl">만들기</span><span class="car">▼</span></button>
+          <div class="make-menu">
+            <button class="mm-hero" onclick="toggleMake('mk6');toast('킥오프 조율이 이미 진행 중이에요 — 발송으로 이어가요.')">새 회의<span class="mm-desc">조건만 넣으면 시간은 시스템이 찾아요</span></button>
+            <button onclick="toggleMake('mk6');toast('일반 일정은 기존 방식대로 시간을 직접 골라 등록해요.')">일정<span class="mm-desc">시간을 직접 지정해요</span></button>
+            <button onclick="toggleMake('mk6');toast('할 일은 시간 없이 등록돼요.')">할 일<span class="mm-desc">시간 없이 등록해요</span></button>
+            <button onclick="toggleMake('mk6');toast('부재중: 자리 비움 등록 — 이 시간은 조율에서 자동 제외돼요.')">부재중<span class="mm-desc">조율에서 자동 제외</span></button>
+            <button onclick="toggleMake('mk6');toast('바쁨: 방해 금지 블록 — 회피 선호 신호로 학습돼요.')">바쁨<span class="mm-desc">회피 신호로 학습</span></button>
+            <button onclick="toggleMake('mk6');toast('외근: 장소 제약 신호로 학습돼요 — 지훈님의 수요일 제외가 이 데이터에서 나와요.')">외근<span class="mm-desc">장소 제약 신호로 학습</span></button>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">2026년 7월</div>
+          <div class="mini">
+            <span class="mh" style="color:#d9605c">일</span><span class="mh">월</span><span class="mh">화</span><span class="mh">수</span><span class="mh">목</span><span class="mh">금</span><span class="mh" style="color:#5a8fd8">토</span>
+            <span class="md out">28</span><span class="md out">29</span><span class="md out">30</span><span class="md">1</span><span class="md">2</span><span class="md">3</span><span class="md">4</span>
+            <span class="md sel sel-s">5</span><span class="md sel">6</span><span class="md sel today">7</span><span class="md sel">8</span><span class="md sel">9</span><span class="md sel">10</span><span class="md sel sel-e">11</span>
+            <span class="md">12</span><span class="md">13</span><span class="md">14</span><span class="md">15</span><span class="md">16</span><span class="md">17</span><span class="md">18</span>
+            <span class="md">19</span><span class="md">20</span><span class="md">21</span><span class="md">22</span><span class="md">23</span><span class="md">24</span><span class="md">25</span>
+            <span class="md">26</span><span class="md">27</span><span class="md">28</span><span class="md">29</span><span class="md">30</span><span class="md">31</span><span class="md out">1</span>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">내 캘린더</div>
+          <div class="sb-check" data-cal="mine" onclick="toggleCal('mine')"><span class="cbx" style="background:#3182f6">✓</span>이가영</div>
+          <div class="sb-check" data-cal="team" onclick="toggleCal('team')"><span class="cbx" style="background:#9775fa">✓</span>디자인팀</div>
+          <div class="sb-title" style="margin-top:14px">회의실</div>
+          <div class="sb-check" data-cal="room1" onclick="toggleCal('room1')"><span class="cbx" style="background:#66a80f">✓</span>미팅룸 1</div>
+          <div class="sb-check" data-cal="room2" onclick="toggleCal('room2')"><span class="cbx" style="background:#2f9e44">✓</span>미팅룸 2</div>
+          <div class="sb-check" data-cal="room3" onclick="toggleCal('room3')"><span class="cbx" style="background:#0ca678">✓</span>미팅룸 3</div>
+          <div class="sb-check" data-cal="room4" onclick="toggleCal('room4')"><span class="cbx" style="background:#0c8599">✓</span>미팅룸 4</div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">진행 중인 조율</div>
+          <div class="sb-item" style="cursor:pointer" onclick="toast('데모에서는 이 조율의 화면은 준비되어 있지 않아요.')"><span class="si-t">마케팅 캠페인 싱크<span class="role guest">참석</span><span class="st-pill ing">조율중</span></span><span class="si-s">화 4:00 제안 받음 · 다른 의견 없으면 내일 확정</span></div>
+        </div>
+      </aside>
+
+    <div class="caloverlay">
+      <div class="calcard">
+        <div class="calhead">
+          <span class="month">2026년 7월</span>
+          <span class="calmsg" style="color:var(--green);border-color:#cdeedd;background:var(--green-bg)">이견 없이 이 시간으로 확정됐어요</span>
+          <button class="today" style="margin-left:auto" onclick="toast('오늘이 있는 주로 이동해요.')">오늘</button>
+          <button class="chev" onclick="toast('이전 주로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">‹</button>
+          <button class="chev" onclick="toast('다음 주로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">›</button>
+        </div>
+        <div class="calgrid">
+          <div class="cal-corner"></div>
+          <div class="dayhead"><div class="dw sun">일</div><div class="dn">5</div></div>
+          <div class="dayhead"><div class="dw">월</div><div class="dn">6</div></div>
+          <div class="dayhead"><div class="dw today-w">화</div><div class="dn today">7</div></div>
+          <div class="dayhead"><div class="dw">수</div><div class="dn">8</div></div>
+          <div class="dayhead"><div class="dw">목</div><div class="dn">9</div></div>
+          <div class="dayhead"><div class="dw">금</div><div class="dn">10</div></div>
+          <div class="dayhead"><div class="dw sat">토</div><div class="dn">11</div></div>
+
+          <div class="timecol">
+            <span data-h="9">9시</span><span data-h="10">10시</span><span data-h="11">11시</span>
+            <span data-h="12">12시</span><span data-h="13">13시</span><span data-h="14">14시</span>
+            <span data-h="15">15시</span><span data-h="16">16시</span><span data-h="17">17시</span>
+          </div>
+          <div class="daycol wknd"><!-- 일 --></div>
+          <div class="daycol"><!-- 월 -->
+            <div class="evt th-1" data-s="10" data-e="11" data-cal="mine">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-s="10" data-e="11" data-cal="team">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt half-l" data-s="14" data-e="15.5" data-cal="mine">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt c-room2 half-r" data-cal="room2" data-s="14" data-e="15.5">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt" data-cal="mine" data-s="16" data-e="17">디자인 QA<div class="et">16:00 – 17:00</div></div>
+          </div>
+          <div class="daycol"><!-- 화 -->
+            <div class="evt" data-s="11" data-e="12" data-cal="mine">UT 준비<div class="et">11:00 – 12:00</div></div>
+            <div class="evt c-room2" data-cal="room2" data-s="9.5" data-e="10.5">채용 인터뷰<div class="et">9:30 – 10:30 · 미팅룸 2</div></div>
+            <div class="evt" data-cal="mine" data-s="13" data-e="14">토큰 스펙 정리<div class="et">13:00 – 14:00</div></div>
+            <div class="evt c-room1" data-cal="room1" data-s="14" data-e="15">스프린트 플래닝<div class="et">14:00 – 15:00 · 미팅룸 1</div></div>
+          </div>
+          <div class="daycol"><!-- 수 -->
+            <div class="evt half-l" data-s="13" data-e="14" data-cal="mine">디자인팀 회의<div class="et">13:00 – 14:00</div></div>
+            <div class="evt c-team half-r" data-s="13" data-e="14" data-cal="team">디자인팀 회의<div class="et">13:00 – 14:00</div></div>
+            <div class="evt" data-cal="mine" data-s="10" data-e="11">UT 세션 준비<div class="et">10:00 – 11:00</div></div>
+            <div class="evt c-room3" data-cal="room3" data-s="15" data-e="16">전사 발표 리허설<div class="et">15:00 – 16:00 · 미팅룸 3</div></div>
+          </div>
+          <div class="daycol"><!-- 목 -->
+            <div class="evt half-l" data-s="10" data-e="11" data-cal="mine">리드 1:1<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 half-r" data-cal="room1" data-s="10" data-e="11">리드 1:1<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt" data-cal="mine" data-s="16" data-e="17">PP 리뷰 B그룹<div class="et">16:00 – 17:00</div></div>
+          </div>
+          <div class="daycol"><!-- 금 -->
+            <div class="evt" data-s="15" data-e="16" data-cal="mine">UT 참관<div class="et">15:00 – 16:00</div></div>
+            <div class="evt th-1" data-cal="mine" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-cal="team" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <button class="evt" id="blkDone" data-cal="mine" data-s="11" data-e="12" onclick="openDone()">디자인 시스템 리뷰<div class="et">11:00 – 12:00 · 미팅룸 2</div></button>
+            <div class="evt c-room4" data-cal="room4" data-s="14" data-e="15">영업팀 데모<div class="et">14:00 – 15:00 · 미팅룸 4</div></div>
+          </div>
+          <div class="daycol wknd"><!-- 토 --></div>
+        </div>
+      </div>
+
+      <div class="panel float" id="donePanel">
+        <div style="display:flex;justify-content:flex-end;gap:2px;margin:-8px -10px 2px 0">
+          <button class="modal-x" data-tip="삭제" onclick="toast('확정 후 삭제는 일반 일정 취소예요 — 참석자 전원에게 취소 알림이 가고 미팅룸 예약이 해제돼요. (데모)')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg></button>
+          <button class="modal-x" data-tip="더보기" onclick="toast('더보기: 복제 · 스팸 신고 · 알림 설정 (데모)')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg></button>
+          <button class="modal-x" data-tip="닫기 — 캘린더 블록에서 다시 열 수 있어요" onclick="closeDone()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="width:20px;display:flex;justify-content:center;flex-shrink:0;padding-top:6px"><span style="width:14px;height:14px;border-radius:4px;background:var(--blue);display:block"></span></span>
+          <div style="flex:1">
+            <h2 style="font-size:18px">디자인 시스템 리뷰</h2>
+            <div style="font-size:14px;color:var(--g600);margin-top:2px">7월 10일 (금) · 오전 11:00 – 12:00</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--green);background:var(--green-bg);border-radius:9px;padding:9px 12px;margin-top:14px">
+          ✓ 이견 없이 이 시간으로 확정됐어요 — 화상링크/미팅룸 예약 완료
+        </div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:2px">
+          <div class="drow"><span class="di">🚪</span><span>미팅룸 2 <span style="color:var(--g400)">· 예약 완료</span></span></div>
+          <div class="drow"><span class="di">💻</span><span><a href="#" onclick="event.preventDefault();toast('화상 링크가 활성화됐어요 — 온라인 참석자의 초대에 포함되어 있어요.')" style="color:var(--blue-d);font-weight:600;text-decoration:none">meet.acmeworks.io/dsr-0710</a></span></div>
+          <div class="drow"><span class="di">🔔</span><span>10분 전 알림</span></div>
+          <div class="drow"><span class="di">👥</span><span>참석자 6명</span><a href="#" onclick="event.preventDefault();showDoneLog()" style="margin-left:auto;font-size:12px;color:var(--blue-d);font-weight:600;text-decoration:none">응답 로그 보기</a></div>
+          <div style="padding-left:30px">
+            <div class="att-r"><span class="avw"><img src="img/p1.jpg"><i class="ok"></i></span>이가영 <span>주최 · 필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p2.jpg"><i class="ok"></i></span>윤지은 <span>필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p3.jpg"><i class="ok"></i></span>박은주 <span>필수 · 마감 동의</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p4.jpg"><i class="ok"></i></span>정지훈 <span>필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p5.jpg"><i class="ok"></i></span>최인영 <span>선택 · 온라인 · 마감 동의</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p6.jpg"><i class="no"></i></span>김민수 <span>선택</span></div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <span class="fnote">조율은 여기서 끝 — 이후의 변경은 일반 일정 수정·취소로 이어져요</span>
+        </div>
+      </div>
+
+      <div class="panel float flexcol" id="doneLogPanel" style="display:none">
+        <div style="display:flex;align-items:center;gap:2px">
+          <button class="modal-x" style="margin-left:-8px" data-tip="뒤로 — 회의 정보로 돌아가요" onclick="openDone()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></button>
+          <h2 style="flex:1;margin-left:4px">응답 로그</h2>
+          <button class="modal-x" data-tip="닫기" onclick="closeDone()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+        <div class="tl" style="margin-top:14px">
+          <div class="tli"><span class="dot b"></span><div><div class="tt"><b>목 2:00 제안 발송</b> — 6명에게 · 미팅룸 4 임시 홀드</div><div class="tm">어제 오후 2:04</div></div></div>
+          <div class="tli"><span class="dot g"></span><div><div class="tt"><b>윤지은 님 좋아요</b></div><div class="tm">어제 오후 2:31</div></div></div>
+          <div class="tli"><span class="dot r"></span><div><div class="tt"><b>정지훈 님(필수) 변경 요청</b> — "금 11시, 화 3시 가능"</div><div class="tm">어제 오후 3:12</div></div></div>
+          <div class="tli"><span class="dot b"></span><div><div class="tt"><b>재계산 → 금 11:00 재제안 발송</b><span class="autotag">자동</span><br>지훈님 제약 반영 · 전원에게 변경 알림</div><div class="tm">어제 오후 3:12</div></div></div>
+          <div class="tli"><span class="dot b"></span><div><div class="tt"><b>미팅룸 홀드 교체</b><span class="autotag">자동</span> — 미팅룸 4 해제 → 미팅룸 2 홀드</div><div class="tm">어제 오후 3:12</div></div></div>
+          <div class="tli"><span class="dot g"></span><div><div class="tt"><b>리마인드 발송</b><span class="autotag">자동</span> — 무응답 2명에게만</div><div class="tm">어제 오후 11:00</div></div></div>
+          <div class="tli"><span class="dot g"></span><div><div class="tt"><b>마감 도달 · 이 시간으로 확정</b><span class="autotag">자동</span> — 미팅룸 2 예약 전환 · 화상 링크 활성화</div><div class="tm">오늘 오전 11:00</div></div></div>
+        </div>
+        <div class="modal-foot" style="flex-direction:column;gap:8px">
+          <span class="ai-grad fnote">✦ 처음부터 끝까지, 사람의 중개 0회</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ═══════ 07 에스컬레이션 — 사람의 결정 ═══════ -->
+  <section class="screen wide" data-step="7">
+    <div class="calapp">
+      <aside class="sidebar">
+        <div class="make-wrap" id="mk7">
+          <button class="make-btn" onclick="toggleMake('mk7')"><span class="plus">＋</span><span class="lbl">만들기</span><span class="car">▼</span></button>
+          <div class="make-menu">
+            <button class="mm-hero" onclick="toggleMake('mk7');toast('킥오프 조율이 이미 진행 중이에요 — 발송으로 이어가요.')">새 회의<span class="mm-desc">조건만 넣으면 시간은 시스템이 찾아요</span></button>
+            <button onclick="toggleMake('mk7');toast('일반 일정은 기존 방식대로 시간을 직접 골라 등록해요.')">일정<span class="mm-desc">시간을 직접 지정해요</span></button>
+            <button onclick="toggleMake('mk7');toast('할 일은 시간 없이 등록돼요.')">할 일<span class="mm-desc">시간 없이 등록해요</span></button>
+            <button onclick="toggleMake('mk7');toast('부재중: 자리 비움 등록 — 이 시간은 조율에서 자동 제외돼요.')">부재중<span class="mm-desc">조율에서 자동 제외</span></button>
+            <button onclick="toggleMake('mk7');toast('바쁨: 방해 금지 블록 — 회피 선호 신호로 학습돼요.')">바쁨<span class="mm-desc">회피 신호로 학습</span></button>
+            <button onclick="toggleMake('mk7');toast('외근: 장소 제약 신호로 학습돼요 — 지훈님의 수요일 제외가 이 데이터에서 나와요.')">외근<span class="mm-desc">장소 제약 신호로 학습</span></button>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">2026년 7월</div>
+          <div class="mini">
+            <span class="mh" style="color:#d9605c">일</span><span class="mh">월</span><span class="mh">화</span><span class="mh">수</span><span class="mh">목</span><span class="mh">금</span><span class="mh" style="color:#5a8fd8">토</span>
+            <span class="md out">28</span><span class="md out">29</span><span class="md out">30</span><span class="md">1</span><span class="md">2</span><span class="md">3</span><span class="md">4</span>
+            <span class="md sel sel-s">5</span><span class="md sel today">6</span><span class="md sel">7</span><span class="md sel">8</span><span class="md sel">9</span><span class="md sel">10</span><span class="md sel sel-e">11</span>
+            <span class="md">12</span><span class="md">13</span><span class="md">14</span><span class="md">15</span><span class="md">16</span><span class="md">17</span><span class="md">18</span>
+            <span class="md">19</span><span class="md">20</span><span class="md">21</span><span class="md">22</span><span class="md">23</span><span class="md">24</span><span class="md">25</span>
+            <span class="md">26</span><span class="md">27</span><span class="md">28</span><span class="md">29</span><span class="md">30</span><span class="md">31</span><span class="md out">1</span>
+          </div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">내 캘린더</div>
+          <div class="sb-check" data-cal="mine" onclick="toggleCal('mine')"><span class="cbx" style="background:#3182f6">✓</span>이가영</div>
+          <div class="sb-check" data-cal="team" onclick="toggleCal('team')"><span class="cbx" style="background:#9775fa">✓</span>디자인팀</div>
+          <div class="sb-title" style="margin-top:14px">회의실</div>
+          <div class="sb-check" data-cal="room1" onclick="toggleCal('room1')"><span class="cbx" style="background:#66a80f">✓</span>미팅룸 1</div>
+          <div class="sb-check" data-cal="room2" onclick="toggleCal('room2')"><span class="cbx" style="background:#2f9e44">✓</span>미팅룸 2</div>
+          <div class="sb-check" data-cal="room3" onclick="toggleCal('room3')"><span class="cbx" style="background:#0ca678">✓</span>미팅룸 3</div>
+          <div class="sb-check" data-cal="room4" onclick="toggleCal('room4')"><span class="cbx" style="background:#0c8599">✓</span>미팅룸 4</div>
+        </div>
+        <div class="sb-card">
+          <div class="sb-title">진행 중인 조율</div>
+          <div class="sb-item" style="cursor:pointer" onclick="openEsc()" title="결정 화면 열기"><span class="si-t">디자인 시스템 리뷰<span class="role host">주최</span><span class="st-pill esc">결정필요</span></span><span class="si-s">모두 괜찮은 후보 소진 · 선택을 기다려요</span></div>
+          <div class="sb-item" style="cursor:pointer" onclick="toast('데모에서는 이 조율의 화면은 준비되어 있지 않아요.')"><span class="si-t">마케팅 캠페인 싱크<span class="role guest">참석</span><span class="st-pill ing">조율중</span></span><span class="si-s">화 4:00 제안 받음 · 다른 의견 없으면 내일 확정</span></div>
+        </div>
+      </aside>
+
+    <div class="caloverlay">
+      <div class="calcard">
+        <div class="calhead">
+          <span class="month">2026년 7월</span>
+          <span class="calmsg" style="color:var(--red);border-color:#f6d5d2;background:var(--red-bg)">모두 괜찮은 시간이 없어요 — 선택이 필요해요</span>
+          <button class="today" style="margin-left:auto" onclick="toast('오늘이 있는 주로 이동해요.')">오늘</button>
+          <button class="chev" onclick="toast('이전 주로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">‹</button>
+          <button class="chev" onclick="toast('다음 주로 이동해요 — 데모에서는 이번 주만 준비되어 있어요.')">›</button>
+        </div>
+        <div class="calgrid">
+          <div class="cal-corner"></div>
+          <div class="dayhead"><div class="dw sun">일</div><div class="dn">5</div></div>
+          <div class="dayhead"><div class="dw today-w">월</div><div class="dn today">6</div></div>
+          <div class="dayhead"><div class="dw">화</div><div class="dn">7</div></div>
+          <div class="dayhead"><div class="dw">수</div><div class="dn">8</div></div>
+          <div class="dayhead"><div class="dw">목</div><div class="dn">9</div></div>
+          <div class="dayhead"><div class="dw">금</div><div class="dn">10</div></div>
+          <div class="dayhead"><div class="dw sat">토</div><div class="dn">11</div></div>
+
+          <div class="timecol">
+            <span data-h="9">9시</span><span data-h="10">10시</span><span data-h="11">11시</span>
+            <span data-h="12">12시</span><span data-h="13">13시</span><span data-h="14">14시</span>
+            <span data-h="15">15시</span><span data-h="16">16시</span><span data-h="17">17시</span>
+          </div>
+          <div class="daycol wknd"><!-- 일 --></div>
+          <div class="daycol"><!-- 월 -->
+            <div class="evt th-1" data-s="10" data-e="11" data-cal="mine">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-s="10" data-e="11" data-cal="team">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">디자인 위클리<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt half-l" data-s="14" data-e="15.5" data-cal="mine">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt c-room2 half-r" data-cal="room2" data-s="14" data-e="15.5">PP 리뷰 A그룹<div class="et">14:00 – 15:30 · 미팅룸 2</div></div>
+            <div class="evt" data-cal="mine" data-s="16" data-e="17">디자인 QA<div class="et">16:00 – 17:00</div></div>
+            <!-- 옵션 블록은 각 요일 컬럼에 -->
+          </div>
+          <div class="daycol"><!-- 화 -->
+            <div class="evt" data-s="11" data-e="12" data-cal="mine">UT 준비<div class="et">11:00 – 12:00</div></div>
+            <div class="evt c-room2" data-cal="room2" data-s="9.5" data-e="10.5">채용 인터뷰<div class="et">9:30 – 10:30 · 미팅룸 2</div></div>
+            <div class="evt" data-cal="mine" data-s="13" data-e="14">토큰 스펙 정리<div class="et">13:00 – 14:00</div></div>
+            <div class="evt c-room1" data-cal="room1" data-s="14" data-e="15">스프린트 플래닝<div class="et">14:00 – 15:00 · 미팅룸 1</div></div>
+            <button class="cand-blk rank3" data-s="15" data-e="16" onclick="showEscPick()">후보 · 양보 필요<br><span class="cbscore">지은님 집중 시간대</span></button>
+          </div>
+          <div class="daycol"><!-- 수 -->
+            <div class="evt half-l" data-s="13" data-e="14" data-cal="mine">디자인팀 회의<div class="et">13:00 – 14:00</div></div>
+            <div class="evt c-team half-r" data-s="13" data-e="14" data-cal="team">디자인팀 회의<div class="et">13:00 – 14:00</div></div>
+            <div class="evt" data-cal="mine" data-s="10" data-e="11">UT 세션 준비<div class="et">10:00 – 11:00</div></div>
+            <div class="evt c-room3" data-cal="room3" data-s="15" data-e="16">전사 발표 리허설<div class="et">15:00 – 16:00 · 미팅룸 3</div></div>
+            <button class="cand-blk rank3" data-s="14" data-e="15" onclick="showEscPick()">후보 · 양보 필요<br><span class="cbscore">지훈님 외근일</span></button>
+          </div>
+          <div class="daycol"><!-- 목 -->
+            <div class="evt half-l" data-s="10" data-e="11" data-cal="mine">리드 1:1<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 half-r" data-cal="room1" data-s="10" data-e="11">리드 1:1<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt" data-cal="mine" data-s="16" data-e="17">PP 리뷰 B그룹<div class="et">16:00 – 17:00</div></div>
+            <button class="evt" id="blkCxl7" data-cal="mine" data-s="14" data-e="15" style="border:1px solid var(--red)" onclick="openEsc()">디자인 시스템 리뷰<div class="et">14:00 – 15:00</div><div class="et" style="color:var(--red);font-weight:700;opacity:1">필수참석자(지훈님) 참석 불가</div></button>
+            <button class="cand-blk rank3" data-s="15" data-e="16" onclick="showEscPick()">후보 · 양보 필요<br><span class="cbscore">미팅룸 없음</span></button>
+          </div>
+          <div class="daycol"><!-- 금 -->
+            <div class="evt" data-s="15" data-e="16" data-cal="mine">UT 참관<div class="et">15:00 – 16:00</div></div>
+            <div class="evt th-1" data-cal="mine" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-team th-2" data-cal="team" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room1 th-3" data-cal="room1" data-s="10" data-e="11">주간 디자인 리뷰<div class="et">10:00 – 11:00 · 미팅룸 1</div></div>
+            <div class="evt c-room4" data-cal="room4" data-s="14" data-e="15">영업팀 데모<div class="et">14:00 – 15:00 · 미팅룸 4</div></div>
+          </div>
+          <div class="daycol wknd"><!-- 토 --></div>
+        </div>
+      </div>
+
+      <div class="panel float" id="escPanel">
+        <div style="display:flex;justify-content:flex-end;gap:2px;margin:-8px -10px 2px 0">
+          <button class="modal-x" data-tip="조율 삭제하기" onclick="toast('삭제는 확인 후 폐기돼요 — 참석자 전원에게 취소 알림이 가요. (데모)')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg></button>
+          <button class="modal-x" data-tip="더보기" onclick="toast('더보기: 복제 · 마감 연장 · 알림 설정 (데모)')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg></button>
+          <button class="modal-x" data-tip="닫기 — 사이드바나 캘린더 블록에서 다시 열 수 있어요" onclick="closeEsc()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="width:20px;display:flex;justify-content:center;flex-shrink:0;padding-top:6px"><span style="width:14px;height:14px;border-radius:4px;background:var(--blue);display:block"></span></span>
+          <div style="flex:1">
+            <h2 style="font-size:18px">디자인 시스템 리뷰</h2>
+            <div style="font-size:14px;color:var(--g600);margin-top:2px">7월 9일 (목) · 오후 2:00 – 3:00</div>
+          </div>
+        </div>
+        <div class="banner-log" data-tip="다른 시간 정하기" onclick="showEscPick()" style="font-size:12px;color:var(--red);background:var(--red-bg);border-radius:9px;padding:9px 12px;margin-top:14px;font-weight:700;cursor:pointer">
+          ⚠ 모두 괜찮은 시간이 없어요
+        </div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:2px">
+          <div class="drow"><span class="di">🚪</span><span>미팅룸 4 <span style="color:var(--g400)">· 홀드 해제됨 — 시간이 정해지면 다시 예약돼요</span></span></div>
+          <div class="drow"><span class="di">👥</span><span>참석자 6명</span><a href="#" onclick="event.preventDefault();showEscLog()" style="margin-left:auto;font-size:12px;color:var(--blue-d);font-weight:600;text-decoration:none">응답 로그 보기</a></div>
+          <div style="padding-left:30px">
+            <div class="att-r"><span class="avw"><img src="img/p1.jpg"><i class="ok"></i></span>이가영 <span>주최 · 필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p2.jpg"><i class="ok"></i></span>윤지은 <span>필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p3.jpg"><i class="na"></i></span>박은주 <span>필수</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p4.jpg"><i class="no"></i></span>정지훈 <span>필수</span><span class="ast r">가능한 시간 없음</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p5.jpg"><i class="na"></i></span>최인영 <span>선택 · 온라인</span></div>
+            <div class="att-r"><span class="avw"><img src="img/p6.jpg"><i class="no"></i></span>김민수 <span>선택</span></div>
+          </div>
+        </div>
+        <div class="modal-foot" style="flex-direction:column;gap:8px">
+          <button class="btn pri" style="width:100%" onclick="showEscPick()">다음 시간 정하기</button>
+          <span class="fnote">자동으로 확정할 수 없는 상황이에요 — 가영님의 선택이 필요해요</span>
+        </div>
+      </div>
+
+      <div class="panel float flexcol" id="escPickPanel" style="display:none">
+        <div style="display:flex;align-items:center;gap:2px">
+          <button class="modal-x" style="margin-left:-8px" data-tip="뒤로 — 회의 정보로 돌아가요" onclick="openEsc()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></button>
+          <h2 style="flex:1;margin-left:4px">다른 시간 정하기</h2>
+          <button class="modal-x" data-tip="닫기" onclick="closeEsc()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+        <p class="desc" style="font-size:12px;margin:2px 0 0 28px">무엇을 감수할지는 가영님의 판단이에요 — 각 선택의 희생을 그대로 보여드릴게요.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+          <button class="toff" onclick="toast('이 조건으로 재제안이 발송되고, 같은 루프(변경 알림 → 마감 → 자동 확정)가 다시 돌아요. 데모는 여기까지예요.')">
+            <div class="tw">화요일 오후 3:00 – 4:00</div>
+            <div class="sac">필수 전원 가능 · 단 <b>윤지은 님이 지켜온 집중 작업 시간</b>을 침범해요</div>
+          </button>
+          <button class="toff" onclick="toast('이 조건으로 재제안이 발송되고, 같은 루프가 다시 돌아요. 지훈님에겐 온라인 참석 확인이 먼저 가요. 데모는 여기까지예요.')">
+            <div class="tw">수요일 오후 2:00 – 3:00</div>
+            <div class="sac">시간대는 모두 무난 · 단 <b class="soft">정지훈 님(필수)이 외근</b>이에요 — 온라인 참석 가능한지 물어보고 진행할 수 있어요</div>
+          </button>
+          <button class="toff" onclick="toast('이 조건으로 재제안이 발송되고, 같은 루프가 다시 돌아요. 데모는 여기까지예요.')">
+            <div class="tw">목요일 오후 3:00 – 4:00</div>
+            <div class="sac">사람은 전원 가능 · 단 <b class="soft">미팅룸이 없어요</b> — 화상 전환 또는 3층 대회의실(10인) 사용</div>
+          </button>
+          <button class="toff" onclick="toast('기간을 다음 주로 넓혀 처음부터 다시 조율해요 — 기한 조정이 가능하다면 희생이 가장 적은 선택이에요.')">
+            <div class="tw">다음 주로 넘기기</div>
+            <div class="sac">희생 없음 · 단 <b>"이번 주까지"라는 기한</b>을 어겨요 — 기한 조정이 가능하다면 가장 안전한 선택</div>
+          </button>
+        </div>
+        <div class="modal-foot">
+          <span class="ai-grad fnote">✦ 기계는 조합을, 사람은 희생의 결정을</span>
+        </div>
+      </div>
+
+      <div class="panel float flexcol" id="escLogPanel" style="display:none">
+        <div style="display:flex;align-items:center;gap:2px">
+          <button class="modal-x" style="margin-left:-8px" data-tip="뒤로 — 회의 정보로 돌아가요" onclick="openEsc()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg></button>
+          <h2 style="flex:1;margin-left:4px">응답 로그</h2>
+          <button class="modal-x" data-tip="닫기" onclick="closeEsc()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+        </div>
+        <div class="tl" style="margin-top:14px">
+          <div class="tli"><span class="dot b"></span><div><div class="tt"><b>목 2:00 제안 발송</b> — 6명에게 · 미팅룸 4 임시 홀드</div><div class="tm">오늘 오후 2:04</div></div></div>
+          <div class="tli"><span class="dot g"></span><div><div class="tt"><b>윤지은 님 좋아요</b></div><div class="tm">오늘 오후 2:31</div></div></div>
+          <div class="tli"><span class="dot r"></span><div><div class="tt"><b>정지훈 님(필수) 응답</b> — "가능한 시간이 없어요"</div><div class="tm">오늘 오후 3:12</div></div></div>
+          <div class="tli"><span class="dot r"></span><div><div class="tt"><b>자동 루프 정지 · 주최자에게 전달</b><span class="autotag">자동</span><br>필수 참석자를 만족하는 후보 소진 — 미팅룸 4 홀드 해제</div><div class="tm">오늘 오후 3:12</div></div></div>
+        </div>
+        <div class="modal-foot">
+          <span class="ai-grad fnote">✦ 기계가 멈춘 자리도 기록에 남아요</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="bottomnav">
+  <button id="prevBtn" onclick="nav(-1)">← 이전</button>
+  <span class="pos" id="pos"></span>
+  <button class="next" id="nextBtn" onclick="nav(1)">다음 →</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var STEPS = [
+  {n:"문제",       role:null},
+  {n:"01 생성",    role:{nm:"이가영", sub:"주최자", c:"#3182f6", ini:"가", img:"img/p1.jpg"}},
+  {n:"02 추천",    role:{nm:"이가영", sub:"주최자", c:"#3182f6", ini:"가", img:"img/p1.jpg"}},
+  {n:"03 수신",    role:{nm:"정지훈", sub:"필수 참석자", c:"#20c997", ini:"훈", img:"img/p4.jpg"}},
+  {n:"04 이의",    role:{nm:"정지훈", sub:"필수 참석자", c:"#20c997", ini:"훈", img:"img/p4.jpg"}},
+  {n:"05 조율 현황", role:{nm:"이가영", sub:"주최자", c:"#3182f6", ini:"가", img:"img/p1.jpg"}},
+  {n:"06 확정",    role:{nm:"이가영", sub:"주최자", c:"#3182f6", ini:"가", img:"img/p1.jpg"}},
+  {n:"⑂ 에스컬레이션", role:{nm:"이가영", sub:"주최자 · 분기", c:"#a8710a", ini:"가", img:"img/p1.jpg"}, branch:true}
+];
+var cur = 0;
+var altSel = [false, false];
+
+function roleAvatar(r){
+  return r.img
+    ? '<img class="ravatar" style="object-fit:cover" src="' + r.img + '" alt="' + r.nm + '">'
+    : '<span class="ravatar" style="background:' + r.c + '">' + r.ini + '</span>';
+}
+
+function renderChrome(){
+  var st = document.getElementById('stepper');
+  st.innerHTML = '';
+  STEPS.forEach(function(s, i){
+    var b = document.createElement('button');
+    b.className = 'stp' + (s.branch ? ' branch' : '') + (i === cur ? ' on' : '');
+    b.textContent = s.n;
+    b.onclick = function(){ go(i); };
+    st.appendChild(b);
+  });
+  var rc = document.getElementById('rolechip');
+  var r = STEPS[cur].role;
+  rc.style.display = r ? '' : 'none'; // 커버에서는 프로필 숨김
+  if (r) rc.innerHTML = roleAvatar(r) + '<b>' + r.nm + '</b>';
+  document.getElementById('prevBtn').disabled = (cur === 0);
+  document.getElementById('nextBtn').disabled = (cur === STEPS.length - 1);
+  document.getElementById('pos').textContent = (cur + 1) + ' / ' + STEPS.length;
+}
+
+function go(i){
+  var next = Math.max(0, Math.min(STEPS.length - 1, i));
+  if (cur === 3 && next === 4) matchPanelHeight('invPanel', 'objPanel'); // 03→04 패널 높이 승계
+  cur = next;
+  var isWide = false;
+  document.querySelectorAll('.screen').forEach(function(s){
+    var on = parseInt(s.getAttribute('data-step'), 10) === cur;
+    s.classList.toggle('on', on);
+    if (on && s.classList.contains('wide')) isWide = true;
+  });
+  document.querySelector('.stage').classList.toggle('fullbleed', isWide);
+  document.body.classList.toggle('calmode', isWide); // 캘린더 화면에서만 뷰 전환·검색·설정 노출
+  // 넛지 모션은 단계 진입 순간에만 — 단계 내 패널 전환에선 재생되지 않도록
+  var act = document.querySelector('.screen.on');
+  if (act){
+    clearTimeout(window._nudgeT);
+    act.classList.remove('nudge');
+    void act.offsetWidth;
+    act.classList.add('nudge');
+    window._nudgeT = setTimeout(function(){ act.classList.remove('nudge'); }, 1300);
+  }
+  renderChrome();
+  renderNote();
+  applyNote();
+  window.scrollTo(0, 0);
+  requestAnimationFrame(layoutCal);
+}
+function nav(d){ go(cur + d); }
+
+/* 캘린더 시간축을 뷰포트 높이에 맞춰 스케일링 (9시–18시 = 9시간) */
+var CAL_START = 9, CAL_HOURS = 9;
+function layoutCal(){
+  document.querySelectorAll('.screen.on .calgrid').forEach(function(g){
+    var col = g.querySelector('.daycol');
+    if (!col || !col.clientHeight) return;
+    var hh = col.clientHeight / CAL_HOURS;
+    g.style.setProperty('--hh', hh + 'px');
+    g.querySelectorAll('[data-s]').forEach(function(el){
+      var s = parseFloat(el.getAttribute('data-s')), e = parseFloat(el.getAttribute('data-e'));
+      el.style.top = ((s - CAL_START) * hh + 2) + 'px';
+      el.style.height = ((e - s) * hh - 4) + 'px';
+    });
+    g.querySelectorAll('.timecol span').forEach(function(sp){
+      sp.style.top = ((parseFloat(sp.getAttribute('data-h')) - CAL_START) * hh) + 'px';
+    });
+  });
+  positionRecPanel();
+}
+window.addEventListener('resize', layoutCal);
+
+/* 02 추천 패널 — 닫기·재열기 (상태는 사이드바에 유지) */
+function closeRec(){
+  document.getElementById('recPanel').style.display = 'none';
+  toast("닫아도 후보는 사라지지 않아요 — 왼쪽 '진행 중인 조율'에서 언제든 다시 열 수 있어요.");
+}
+function openRec(){
+  var p = document.getElementById('recPanel');
+  p.style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+
+/* 02 추천 패널 — 추천 블록(목 2시) 왼쪽, 아래끝 맞춤 */
+function positionPanelToBlock(panelId, blkId){
+  var blk = document.getElementById(blkId);
+  var panel = document.getElementById(panelId);
+  if (!blk || !panel || !blk.offsetParent) return; // 화면 비활성 시 스킵
+  var ov = panel.parentElement; // .caloverlay
+  var co = ov.getBoundingClientRect();
+  var b = blk.getBoundingClientRect();
+  var gap = 8;
+  var left = Math.max(10, b.left - co.left - panel.offsetWidth - gap);
+  var top = Math.max(10, b.bottom - co.top - panel.offsetHeight);
+  panel.style.left = left + 'px';
+  panel.style.top = top + 'px';
+  panel.style.right = 'auto';
+}
+function positionRecPanel(){
+  positionPanelToBlock('recPanel', 'blkBest');   // 02 추천
+  positionPanelToBlock('invPanel', 'blkProp');   // 03 수신
+  positionPanelToBlock('invLogPanel', 'blkProp'); // 03 로그
+  positionPanelToBlock('objPanel', 'blkProp4');  // 04 이의
+  positionPanelToBlock('staPanel', 'blkRe');     // 05 현황
+  positionPanelToBlock('logPanel', 'blkRe');     // 05 로그
+  positionPanelToBlock('donePanel', 'blkDone');  // 06 확정
+  positionPanelToBlock('doneLogPanel', 'blkDone'); // 06 로그
+  positionPanelToBlock('escPanel', 'blkCxl7');   // 07 정보
+  positionPanelToBlock('escPickPanel', 'blkCxl7'); // 07 결정
+  positionPanelToBlock('escLogPanel', 'blkCxl7');  // 07 로그
+}
+function openSta(){
+  document.getElementById('logPanel').style.display = 'none';
+  document.getElementById('staPanel').style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+function closeSta(){
+  document.getElementById('staPanel').style.display = 'none';
+  document.getElementById('logPanel').style.display = 'none';
+  toast("닫았어요 — 사이드바 '진행 중인 조율'이나 금요일 블록에서 다시 열 수 있어요.");
+}
+function showLog(){
+  matchPanelHeight('staPanel', 'logPanel');
+  document.getElementById('staPanel').style.display = 'none';
+  document.getElementById('logPanel').style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+function backLog(){ openSta(); }
+function openDone(){
+  document.getElementById('doneLogPanel').style.display = 'none';
+  var p = document.getElementById('donePanel');
+  p.style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+function closeDone(){
+  document.getElementById('donePanel').style.display = 'none';
+  document.getElementById('doneLogPanel').style.display = 'none';
+  toast('닫았어요 — 금요일 블록을 누르면 다시 열 수 있어요.');
+}
+function showDoneLog(){
+  matchPanelHeight('donePanel', 'doneLogPanel');
+  document.getElementById('donePanel').style.display = 'none';
+  document.getElementById('doneLogPanel').style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+function openEsc(){
+  document.getElementById('escPickPanel').style.display = 'none';
+  document.getElementById('escLogPanel').style.display = 'none';
+  document.getElementById('escPanel').style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+function showEscPick(){
+  matchPanelHeight('escPanel', 'escPickPanel');
+  document.getElementById('escPanel').style.display = 'none';
+  document.getElementById('escLogPanel').style.display = 'none';
+  document.getElementById('escPickPanel').style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+function showEscLog(){
+  matchPanelHeight('escPanel', 'escLogPanel');
+  document.getElementById('escPanel').style.display = 'none';
+  document.getElementById('escPickPanel').style.display = 'none';
+  document.getElementById('escLogPanel').style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+function closeEsc(){
+  document.getElementById('escPanel').style.display = 'none';
+  document.getElementById('escPickPanel').style.display = 'none';
+  document.getElementById('escLogPanel').style.display = 'none';
+  toast("닫았어요 — 사이드바 '진행 중인 조율'이나 캘린더의 블록에서 다시 열 수 있어요.");
+}
+function openObj(){
+  var p = document.getElementById('objPanel');
+  p.style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+function matchPanelHeight(fromId, toId){
+  var f = document.getElementById(fromId), t = document.getElementById(toId);
+  if (f && t && f.offsetHeight) t.style.height = f.offsetHeight + 'px';
+}
+function showInvLog(){
+  matchPanelHeight('invPanel', 'invLogPanel');
+  document.getElementById('invPanel').style.display = 'none';
+  document.getElementById('invLogPanel').style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+function closeInv(){
+  document.getElementById('invPanel').style.display = 'none';
+  document.getElementById('invLogPanel').style.display = 'none';
+  toast("닫았어요 — 사이드바 '진행 중인 조율'이나 목요일 블록에서 다시 열 수 있어요.");
+}
+function openInv(){
+  document.getElementById('invLogPanel').style.display = 'none';
+  var p = document.getElementById('invPanel');
+  p.style.display = '';
+  requestAnimationFrame(positionRecPanel);
+}
+
+/* 생성 모달 */
+function openCreate(){ document.getElementById('createBack').classList.remove('hide'); }
+function closeCreate(){ document.getElementById('createBack').classList.add('hide'); }
+
+/* 캘린더 표시/숨김 토글 */
+var CAL_COLORS = {mine:'#3182f6', team:'#9775fa', room1:'#66a80f', room2:'#2f9e44', room3:'#0ca678', room4:'#0c8599'};
+var calVis = {mine:true, team:true, room1:true, room2:true, room3:true, room4:true};
+function toggleCal(k){
+  calVis[k] = !calVis[k];
+  document.querySelectorAll('.sb-check[data-cal="' + k + '"] .cbx').forEach(function(c){
+    if (calVis[k]){ c.style.background = CAL_COLORS[k]; c.style.border = 'none'; c.textContent = '✓'; }
+    else { c.style.background = 'transparent'; c.style.border = '1px solid ' + CAL_COLORS[k]; c.textContent = ''; }
+  });
+  document.querySelectorAll('.evt[data-cal="' + k + '"]').forEach(function(e){
+    e.style.display = calVis[k] ? '' : 'none';
+  });
+}
+
+/* 조건 요약 칩 — 눌러서 그 자리에서 바꾸기 */
+var COND_DESC = {
+  dur: '회의가 얼마나 걸리나요?',
+  per: '이 기간 안에서만 후보 시간을 찾아요.',
+  ddl: '발송 후 이 시간까지 다른 의견이 없으면 자동 확정돼요.',
+  room: '오프라인 인원에 맞는 미팅룸을 찾아 후보와 함께 임시 홀드해요.',
+  band: '선호 시간대가 있다면 후보를 그 시간대로만 제한해요.'
+};
+var COND_OPTS = {
+  dur: ['30분', '45분', '1시간', '1시간 30분', '2시간'],
+  per: ['이번 주', '다음 주', '2주 이내', '직접 선택'],
+  ddl: ['12시간', '24시간', '48시간'],
+  room: ['자동', '직접 지정', '필요 없음'],
+  band: ['무관', '오전만', '오후만']
+};
+var condOpen = null;
+function openCond(key){
+  if (condOpen === key) return closeCond();
+  condOpen = key;
+  ['dur','per','ddl','room','band'].forEach(function(k){
+    document.getElementById('chip-' + k).classList.toggle('opened', k === key);
+  });
+  renderCondPanel();
+}
+function closeCond(){
+  condOpen = null;
+  ['dur','per','ddl','room','band'].forEach(function(k){ document.getElementById('chip-' + k).classList.remove('opened'); });
+  document.getElementById('condPanel').style.display = 'none';
+}
+function renderCondPanel(){
+  var cur = document.getElementById('val-' + condOpen).textContent;
+  var isRoomPick = (condOpen === 'room') && ['1','2','3','4'].indexOf(cur) > -1;
+  var html = '<div class="cond-desc">' + COND_DESC[condOpen] + '</div>';
+  html += '<div class="chips-row">' + COND_OPTS[condOpen].map(function(o){
+    var on = (o === cur) || (o === '직접 지정' && isRoomPick);
+    return '<button class="chip-sel' + (on ? ' on' : '') + '" onclick="setCond(\'' + o + '\')">' + o + '</button>';
+  }).join('') + '</div>';
+  if (condOpen === 'per' && cur === '직접 선택'){
+    html += '<div class="frow" style="margin-top:8px">'
+      + '<div class="fbox" style="flex:1;min-width:0;background:#fff"><span class="lab">시작</span><input type="date" value="2026-07-06"></div>'
+      + '<div class="fbox" style="flex:1;min-width:0;background:#fff"><span class="lab">종료</span><input type="date" value="2026-07-10"></div></div>';
+  }
+  if (condOpen === 'room' && (cur === '직접 지정' || isRoomPick)){
+    html += '<div class="cond-desc" style="margin:10px 0 8px">어느 미팅룸으로 잡을까요? 그 룸이 빈 시간만 후보가 돼요.</div>'
+      + '<div class="chips-row">' + ['미팅룸 1','미팅룸 2','미팅룸 3','미팅룸 4'].map(function(r){
+        return '<button class="chip-sel' + (r === '미팅룸 ' + cur ? ' on' : '') + '" onclick="setCond(\'' + r + '\')">' + r + '</button>';
+      }).join('') + '</div>';
+  }
+  var p = document.getElementById('condPanel');
+  p.innerHTML = html;
+  p.style.display = 'block';
+}
+function setCond(val){
+  // 칩 라벨에 '미팅룸'이 이미 있으므로 룸 선택값은 번호만 표기
+  if (condOpen === 'room' && val.indexOf('미팅룸 ') === 0) val = val.replace('미팅룸 ', '');
+  document.getElementById('val-' + condOpen).textContent = val;
+  if (condOpen === 'per'){
+    document.getElementById('suf-per').textContent = (val === '이번 주' || val === '다음 주') ? ' 이내' : '';
+    if (val === '직접 선택'){ renderCondPanel(); return; }
+  }
+  if (condOpen === 'room' && val === '직접 지정'){ renderCondPanel(); return; }
+  closeCond();
+}
+
+/* 만들기 드롭다운 */
+function toggleMake(id){ document.getElementById(id).classList.toggle('open'); }
+document.addEventListener('click', function(e){
+  document.querySelectorAll('.make-wrap.open').forEach(function(w){
+    if (!w.contains(e.target)) w.classList.remove('open');
+  });
+});
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'ArrowRight') nav(1);
+  if (e.key === 'ArrowLeft') nav(-1);
+});
+
+var onSel = false;
+function updateAltCta(){
+  var times = altSel[0] || altSel[1];
+  var b = document.getElementById('altSubmit');
+  b.disabled = !(times || onSel);
+  b.textContent = (onSel && times) ? '응답 보내기'
+    : onSel ? '온라인 참석으로 요청하기' : '이 시간들은 가능해요';
+}
+function toggleAlt(i){
+  altSel[i] = !altSel[i];
+  document.getElementById('alt' + i).classList.toggle('sel', altSel[i]);
+  updateAltCta();
+}
+function toggleOnline(){
+  onSel = !onSel;
+  document.getElementById('altOn').classList.toggle('sel', onSel);
+  updateAltCta();
+}
+
+/* 설계 노트 드로어 */
+var WHY = [
+  '<b>문제 먼저, 화면은 그다음.</b><br>진짜 고통은 첫 제안이 아니라 <b>실패 이후의 재협상 루프</b> — 그 루프를 제품 안으로 가져온다.',
+  '<b>내 캘린더 위에서 생성</b><br>남의 캘린더를 훑지 않는다 — 조건만 주면 시스템이 찾는다.<br><br><b>입력은 2개뿐 — 제목, 참석자</b><br>나머지는 스마트 디폴트, 조건 칩으로 예외만 수정.<br><br><b>온라인 가능 = 제약 완화 레버</b><br>룸 인원·장소 제약에서 제외.',
+  '<b>비어있는 시간 ≠ 괜찮은 시간</b><br>6명의 캘린더를 분석해 \'비어있는\' 순서가 아니라 \'괜찮은\' 순서로 정렬한다.<br><br><b>\'괜찮음\'을 계산하는 법</b><br>점수 = 100 − 감점. 감점 하나마다 카드에 근거 태그가 하나씩 붙는다 — 숨은 감점은 없다.<br>하드 제약(필수 busy·외근일·인원이 들어갈 룸 없음)은 감점 없이 후보 제외 — 수요일이 그 경우.<br><br>−8 &nbsp;불확실성, 데이터 적은 참석자<br>−13~18 &nbsp;필수 참석자의 회피 패턴 침해<br>−5 &nbsp;선택 참석자의 일정과 겹침 (불참 가능)<br>−5 &nbsp;대형 룸 점유 — 회의엔 지장 없지만 공유 자원 비효율<br><br>숫자는 내부용 — 화면엔 단계와 순서만. 단계는 순위가 아니라 <b>점수 구간</b>: 90+ 모두 좋음 · 80대 괜찮음 · 70대 양보 필요. 후보가 다 좋으면 전부 \'모두 좋음\'일 수도 있다.<br><br><b>후보는 내부에서 모두 보유, 화면엔 3개만 제공</b><br>발송할 추천 1개 + 참석자가 \'어려워요\' 했을 때 내밀 대안 2개. 후보를 늘어놓으면 사용자가 다시 하나하나 저울질하게 된다 — 기존 도구의 비교 노동으로 회귀.<br><br><b>발송 = 확정 예고, 투표가 아니다</b><br>옵션을 여러 개 보내는 순간 침묵=동의가 무너진다 — 무응답이 어느 옵션에 대한 동의인지 알 수 없어 전원의 응답을 기다려야 하고, 없애려던 수집 병목이 부활한다. 하나만 보내야 무응답이 유효한 응답이 되고, 참석자의 응답 의무가 사라진다.<br><br><b>미팅룸 동시 홀드</b> — 방이 사라지는 레이스 차단.<br><br><b>Google의 \'추천 시간\'과 뭐가 다른가</b><br>구글·아웃룩의 추천은 free/busy 교집합 — \'비어있음\'만 본다. 이 제안에서는 회피 패턴·확신도·미팅룸까지 점수화하고 모든 추천에 근거를 단다. 그리고 구글은 추천에서 끝나지만 여기서는 발송 → 마감 → 자동 확정·재조율까지 책임진다 — <b>기준이 다르고(괜찮음), 끝이 다르다(확정까지)</b>.',
+  '<b>참석자 비용 = 0</b> — 시간 하나만 도착, 응답조차 선택.<br><br><b>침묵 = 동의, 허락이 아니라 용서를 구한다</b><br>사내 제안은 대부분 그대로 수용된다 — 핵심 가설이 딛고 선 전제. 그런데 전원에게 미리 허락(응답)을 받는 건 소수의 예외를 위해 전원에게 비용을 물리는 일. 그래서 순서를 뒤집는다 — 먼저 확정하고, 어려운 사람만 사후 교정한다. 옵션 제시는 \'골라야 한다\'는 결정 노동을 만들지만, 확정 예고는 아무것도 안 하는 것을 유효한 선택으로 만든다.<br><br><b>응답 로직은 하나, 채널은 능력만큼</b><br>슬랙 봇 = 버튼·모달로 완전 동등 응답. 이메일 = \'좋아요\'는 원클릭 링크로 즉시 처리, \'어려워요\'는 웹 랜딩으로. 앱이 없는 사람에겐 로그인 없는 토큰 링크. 어디서 받든 같은 응답 화면으로 수렴한다.<br><br>지금은 <b>정지훈(필수)</b>이 캘린더 앱 안에서 보는 화면 — 외부 미팅이 잡혀 "어려워요"를 눌러본다.',
+  '<b>거절 = 구조화된 데이터</b><br>자유 텍스트는 결국 주최자가 읽고 해석해야 하는 일감이다. 계산된 선택지 위에서만 고르게 해야 사람의 중개 없이 시스템이 즉시 재계산한다.<br><br><b>대안은 이미 검증된 2개만</b><br>02에서 랭킹된 차선들 — 다른 참석자들도 괜찮은 시간만 내민다. 이의자가 아무 시간이나 던져 또 충돌하는 핑퐁을 차단하고, 이의자에겐 결정권이 아니라 <b>제약 제공권</b>을 준다.<br><br><b>비용이 싼 순서로 배치</b><br>① 방식 전환 — 누구의 시간도 건드리지 않는다 (오프라인 필수 참석자는 주최자 확인 1회)<br>② 시간 대안 — 자동 재제안, 전원 알림 1회<br>③ 가능한 시간 없음 — 기계가 멈추고 사람의 판단으로<br><br><b>새 레이어를 쌓지 않는다</b><br>같은 제안에 대한 연속 동작이라 패널 안에서 전환하고, 뒤로 한 번이면 회의 정보로 돌아간다 — 이의는 탐색적 행동이니까.<br><br>선택은 저장 → <b>다음 조율이 더 정확해진다</b>.<br><br><b>Google의 \'새로운 시간 제안\'과 뭐가 다른가</b><br>같은 문제의식(거절을 막다른 골목으로 두지 않기) — 이 문제 정의가 유효하다는 방증.<br>다른 점: 구글은 아무 시간이나 역제안할 수 있어 재충돌이 열려 있고, 그 제안의 처리(검토·수락)는 주최자의 수작업으로 남는다. 이 제안에서는 검증된 대안 위에서만 고르게 하고, 처리는 루프가 한다 — <b>구글은 거절에 정보를 담았고, 이 제안은 그 처리를 자동화했다</b>.',
+  '<b>문제 정의의 증명 화면</b><br>목요일의 취소선과 금요일의 새 블록 — 슬랙에서 며칠 걸리던 재협상이 캘린더 위에서 자동으로 끝나 있다.<br><br><b>늘 보던 회의 정보 팝업 그대로</b><br>특별한 관제 화면이 아니다. 익숙한 일정 상세에 변경 안내와 응답 현황이 얹혔을 뿐 — 새로 배울 것이 없다.<br><br><b>응답 로그 = 패널 내 전환</b><br>같은 조율 객체의 이력이라 레이어를 쌓지 않는다. 뒤로 한 번이면 회의 정보로.<br><br><b>필수의 이의만 루프 트리거</b> — 민수(선택)의 불참은 기록만 남는다.<br><br><b>알림은 두 종류</b><br>변경 알림은 <b>전원에게</b> — 이미 참석을 누른 사람도 새 시간에 대한 거부권을 다시 받고, 침묵=동의가 새로 시작된다. 리마인드는 <b>무응답자에게만</b> — 이미 응답한 사람을 재촉하지 않는다.<br><br><b>로그는 전원 열람</b><br>주최자만의 관제탑이 아니다 — 내 시간이 왜 움직였는지 참석자도 추적할 수 있어야 침묵=동의가 신뢰받는다.<br><br><b>슬랙에서도 같은 로직</b><br>봇이 상태 카드를 계속 갱신하고(chat.update), 응답 로그는 모달로 — 로직은 하나, 표현만 채널의 능력만큼.',
+  '<b>확정은 행사가 아니라 상태 전이</b><br>세리머니 없음 — 앰버가 걷히고 평범한 일정이 될 뿐. 화면이 조용해지는 것이 확정의 표현이다.<br><br><b>그래도 이 개념이 필요한 이유 — 마감 시각에 실제로 일어나는 일</b><br>① 미팅룸 홀드 → 실예약, 자원이 커밋된다<br>② 재제안 루프 종료 — 이후 변경은 일반 일정 수정·취소 플로우로 이관<br>③ 마감·리마인드 알림 사이클 종료<br>④ \'진행 중인 조율\'에서 퇴장 — 사이드바가 비었다<br><br><b>확정 배너는 일회성</b><br>상태 배지가 아니라 읽고 나면 사라지는 안내다. 그 뒤 이 팝업은 여느 일정 상세와 구별되지 않는다 — 조율의 흔적은 로그에만 남는다.<br><br><b>확정 후의 CTA</b><br>주최자에겐 상시 CTA가 없다 — 수정·삭제는 상단 아이콘의 몫. 참석자 뷰에는 \'응답 변경\'이 상시 제공된다(구글 RSVP처럼, 언제든 번복 가능).<br><br><b>확정이 잠그는 건 시간뿐</b><br>참석·불참 응답은 그 후에도 유동적이다 — 그건 RSVP 메타데이터지 조율이 아니다. 그래서 1차·2차 확정 같은 버전 개념도 두지 않는다.<br><br><b>성과 — 기존 방식 대비</b><br>주최자 액션 1회 · 참석자 응답 탭 3번 · 슬랙 재협상 0건.<br>기존: 초대 → 불참 → 슬랙 쓰레드 → 며칠.<br><br>응답 데이터는 저장 → <b>쓸수록 다음 조율이 정확해지는 플라이휠</b>.',
+  '<b>해가 소진되면 루프 정지</b><br>기계가 몰래 결정하지 않는다 — 자동화의 마지막 정거장은 사람이다.<br><br><b>왜 자동으로 안 고르나</b><br>누구의 집중 시간이 더 귀한지, 기한과 미팅룸 중 무엇을 접을지는 조직 맥락과 관계의 문제 — 시스템이 아는 척할 수 없는 영역이다.<br><br><b>트레이드오프를 문장으로 번역</b><br>누가 무엇을 감수하는지 그대로. 옵션은 캘린더 블록으로도 보여 <b>희생의 위치가 시공간에 보인다</b>.<br><br><b>선택하면 루프 재시작</b><br>재제안 발송 → 변경 알림 → 마감 → 자동 확정. \'다음 주로 넘기기\'는 기한도 협상 대상임을 인정하는 선택지.<br><br><b>기계는 조합을, 사람은 희생의 결정을.</b>'
+];
+var noteWant = true; // 사용자의 열림/닫힘 선택 기억
+function toggleNote(){
+  noteWant = !noteWant;
+  applyNote();
+  setTimeout(layoutCal, 320); // 드로어가 밀어낸 만큼 캘린더 재계산
+}
+function applyNote(){
+  var btn = document.querySelector('.notebtn');
+  if (cur === 0){ // 커버에서는 노트를 숨겨 문제 정의에 집중
+    document.body.classList.remove('note-open');
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = '';
+    document.body.classList.toggle('note-open', noteWant);
+  }
+}
+function renderNote(){
+  var r = STEPS[cur].role;
+  var w = document.getElementById('noteViewWrap');
+  w.style.display = r ? '' : 'none';
+  if (r) document.getElementById('noteView').innerHTML =
+    roleAvatar(r) + r.nm + ' <span class="sub">· ' + r.sub + '</span>';
+  document.getElementById('noteStep').textContent = STEPS[cur].n;
+  document.getElementById('noteBody').innerHTML = WHY[cur] || '';
+}
+
+/* 오버플로 클리핑을 피하는 고정 툴팁 (패널 헤더 버튼 등) */
+document.addEventListener('mouseover', function(e){
+  var el = e.target.closest('.modal-x[data-tip], .banner-log[data-tip]');
+  var old = document.getElementById('fixtip');
+  if (old) old.remove();
+  if (!el) return;
+  var t = document.createElement('div');
+  t.id = 'fixtip';
+  t.textContent = el.getAttribute('data-tip');
+  document.body.appendChild(t);
+  var r = el.getBoundingClientRect();
+  t.style.left = (r.left + r.width / 2) + 'px';
+  t.style.top = (r.top - 7) + 'px';
+});
+
+var toastTimer = null;
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3600);
+}
+
+/* 01 생성 — 참석자: 디렉터리 검색으로 추가 */
+var PEOPLE = [
+  {ini:"가", c:"#3182f6", img:"img/p1.jpg", nm:"이가영", em:"gayoung.lee@acmeworks.io", hint:"주최자", req:true,  off:true, added:true, fixed:true},
+  {ini:"지", c:"#9775fa", img:"img/p2.jpg", nm:"윤지은", em:"jieun.yoon@acmeworks.io", hint:"", req:true, off:true, added:true},
+  {ini:"은", c:"#f76707", img:"img/p3.jpg", nm:"박은주", em:"eunju.park@acmeworks.io", hint:"최근 점심 직후 회의 3회 거절", req:true, off:true, added:true},
+  {ini:"훈", c:"#20c997", img:"img/p4.jpg", nm:"정지훈", em:"jihun.jung@acmeworks.io", hint:"수요일 외근 패턴 감지됨", req:true, off:true, added:true},
+  {ini:"인", c:"#868e96", img:"img/p5.jpg", nm:"최인영", em:"inyoung.choi@acmeworks.io", hint:"", req:false, off:false, added:true},
+  {ini:"민", c:"#868e96", img:"img/p6.jpg", nm:"김민수", em:"minsu.kim@acmeworks.io", hint:"", req:false, off:false, added:true},
+  {ini:"준", c:"#f06595", img:"img/p7.jpg", nm:"박준호", em:"junho.park@acmeworks.io", hint:"", req:false, off:true, added:false},
+  {ini:"수", c:"#845ef7", img:"img/p8.jpg", nm:"서지수", em:"jisu.seo@acmeworks.io", hint:"", req:false, off:true, added:false},
+  {ini:"태", c:"#339af0", img:"img/p9.jpg", nm:"윤태진", em:"taejin.yoon@acmeworks.io", hint:"", req:false, off:true, added:false}
+];
+function avatarHtml(p, size){
+  return p.img
+    ? '<img class="pavatar" style="width:' + size + 'px;height:' + size + 'px;object-fit:cover" src="' + p.img + '" alt="' + p.nm + '">'
+    : '<span class="pavatar" style="width:' + size + 'px;height:' + size + 'px;background:' + p.c + '">' + p.ini + '</span>';
+}
+
+var ICONS = {
+  necessary: '<svg width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M788.5-372q16.5 0 28.5 12l63 64q12 12 12 28t-12 28q-12 12-28 12t-28-12l-64-63q-12-12-12-28.5t12-28.5q12-12 28.5-12ZM812-811.5q0 16.5-12 28.5l-63 63q-12 12-28.5 12T680-720q-12-12-12-28.5t12-28.5l64-63q12-12 28-12t28 12q12 12 12 28.5ZM188.5-852q16.5 0 28.5 12l63 64q12 12 12 28t-12 28q-12 12-28.5 12T223-720l-63-63q-12-12-12-28.5t12-28.5q12-12 28.5-12ZM212-331.5q0 16.5-12 28.5l-63 63q-12 12-28.5 12T80-240q-12-12-12-28.5T80-297l64-63q12-12 28-12t28 12q12 12 12 28.5ZM480-269 314-169q-11 7-23 6t-21-8q-9-7-14-17.5t-2-23.5l44-189-147-127q-10-9-12.5-20.5T140-571q4-11 12-18t22-9l194-17 75-178q5-12 15.5-18t21.5-6q11 0 21.5 6t15.5 18l75 178 194 17q14 2 22 9t12 18q4 11 1.5 22.5T809-528L662-401l44 189q3 13-2 23.5T690-171q-9 7-21 8t-23-6L480-269Z"/></svg>',
+  optional: '<svg width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143Zm126 18L314-169q-11 7-23 6t-21-8q-9-7-14-17.5t-2-23.5l44-189-147-127q-10-9-12.5-20.5T140-571q4-11 12-18t22-9l194-17 75-178q5-12 15.5-18t21.5-6q11 0 21.5 6t15.5 18l75 178 194 17q14 2 22 9t12 18q4 11 1.5 22.5T809-528L662-401l44 189q3 13-2 23.5T690-171q-9 7-21 8t-23-6L480-269Zm0-201Z"/></svg>',
+  room: '<svg width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M160-120q-17 0-28.5-11.5T120-160q0-17 11.5-28.5T160-200h40v-600q0-17 11.5-28.5T240-840h280q17 0 28.5 11.5T560-800h160q17 0 28.5 11.5T760-760v560h40q17 0 28.5 11.5T840-160q0 17-11.5 28.5T800-120h-80q-17 0-28.5-11.5T680-160v-560H560v560q0 17-11.5 28.5T520-120H160Zm308.5-388.5Q457-520 440-520t-28.5 11.5Q400-497 400-480t11.5 28.5Q423-440 440-440t28.5-11.5Q480-463 480-480t-11.5-28.5Z"/></svg>',
+  online: '<svg width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M40-160q-17 0-28.5-11.5T0-200q0-17 11.5-28.5T40-240h40v-520q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v520h40q17 0 28.5 11.5T960-200q0 17-11.5 28.5T920-160H40Zm380-80h120q8 0 14-6t6-14q0-8-6-14t-14-6H420q-8 0-14 6t-6 14q0 8 6 14t14 6ZM160-360h640v-400H160v400Zm320-200Z"/></svg>',
+  close: '<svg width="13" height="13" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z"/></svg>'
+};
+
+function renderPeople(){
+  var list = document.getElementById('pchips');
+  list.innerHTML = '';
+  var n = 0;
+  PEOPLE.forEach(function(p, i){
+    if (!p.added) return;
+    n++;
+    var d = document.createElement('div');
+    d.className = 'prow2';
+    d.innerHTML =
+      avatarHtml(p, 36) +
+      '<div class="p2info"><div class="p2nm">' + p.nm + '</div>' + (p.hint ? '<div class="p2hint">' + p.hint + '</div>' : '') + '</div>' +
+      '<button class="icbtn' + (p.req ? ' on' : '') + '" onclick="togglePersonReq(' + i + ')" data-tip="' + (p.req ? '필수 참석' : '선택 참석') + '">' + (p.req ? ICONS.necessary : ICONS.optional) + '</button>' +
+      '<button class="icbtn' + (!p.off ? ' on' : '') + '" onclick="togglePersonOff(' + i + ')" data-tip="' + (p.off ? '오프라인 필수' : '온라인 가능') + '">' + (p.off ? ICONS.room : ICONS.online) + '</button>' +
+      '<button class="x" data-tip="' + (p.fixed ? '주최자 빼기 — 회의를 만들기만 하고 참석하지 않을 수 있어요' : '참석자 빼기') + '" style="position:relative" onclick="removePerson(' + i + ')">' + ICONS.close + '</button>';
+    list.appendChild(d);
+  });
+  document.getElementById('pcount').textContent = n;
+}
+function togglePersonReq(i){ PEOPLE[i].req = !PEOPLE[i].req; renderPeople(); }
+function togglePersonOff(i){ PEOPLE[i].off = !PEOPLE[i].off; renderPeople(); }
+
+function searchPeople(){
+  var q = document.getElementById('pinput').value.trim().toLowerCase();
+  var drop = document.getElementById('pdrop');
+  var hits = PEOPLE.map(function(p, i){ p._i = i; return p; }).filter(function(p){
+    return !p.added && (q === '' || p.nm.toLowerCase().indexOf(q) > -1 || p.em.toLowerCase().indexOf(q) > -1);
+  });
+  drop.innerHTML = hits.length
+    ? hits.map(function(p){
+        return '<button class="pd-item" onclick="addPerson(' + p._i + ')">'
+          + avatarHtml(p, 32)
+          + '<span><span class="pd-nm">' + p.nm + '</span><br><span class="pd-em">' + p.em + '</span></span></button>';
+      }).join('')
+    : '<div class="pd-none">검색 결과가 없어요</div>';
+  drop.classList.add('show');
+}
+function addPerson(i){
+  PEOPLE[i].added = true;
+  document.getElementById('pinput').value = '';
+  document.getElementById('pdrop').classList.remove('show');
+  renderPeople();
+}
+function removePerson(i){
+  PEOPLE[i].added = false;
+  renderPeople();
+}
+document.addEventListener('click', function(e){
+  var box = document.getElementById('pinput');
+  if (box && !box.parentElement.contains(e.target)) document.getElementById('pdrop').classList.remove('show');
+});
+
+renderPeople();
+
+/* 모든 세그먼트 토글 공통 처리 (참석자별 지정, 시간대 제한 등) */
+document.addEventListener('click', function(e){
+  var t = e.target;
+  if (t.tagName !== 'BUTTON' || !t.parentElement || !t.parentElement.classList.contains('seg')) return;
+  var seg = t.parentElement;
+  if (seg.getAttribute('data-static')) return; // 목업 탭은 선택 고정
+  Array.prototype.forEach.call(seg.children, function(b, idx){
+    // 각 세그먼트의 첫 버튼(필수/오프라인/무관)이 선택되면 accent 컬러
+    var cls = (b === t) ? ('on' + (idx === 0 ? ' accent' : '')) : '';
+    var keepStyle = b.getAttribute('style');
+    b.className = cls;
+    if (keepStyle) b.setAttribute('style', keepStyle);
+  });
+});
+
+go(0);
+</script>
+</body>
+</html>
